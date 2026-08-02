@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.8</title>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.9</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -115,8 +115,8 @@
         <div class="user-profile" onclick="openProfileModal()">
             <div class="profile-logo" id="ui-profile-logo">👑</div>
             <div class="profile-info">
-                <div class="profile-team-name"><span id="ui-team-name">Ankara Gücü FC</span> ✏️</div>
-                <div class="profile-manager-name">Menajer: <span id="ui-manager-name">Murat</span></div>
+                <div class="profile-team-name"><span id="ui-team-name">TFF Takımı</span> ✏️</div>
+                <div class="profile-manager-name">Menajer: <span id="ui-manager-name">AnonimMenejer_0000</span></div>
             </div>
         </div>
 
@@ -201,7 +201,7 @@
 
                 <div class="panel">
                     <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
-                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v6.8 Aktif - sayrox101 eklendi)</div>
+                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v6.9 Aktif - Sayrox101 eklendi)</div>
                 </div>
             </div>
         </div>
@@ -335,7 +335,7 @@
                     </div>
                 </div>
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize v6.8)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize v6.9)</div>
                 </div>
             </div>
             <div class="sidebar">
@@ -394,8 +394,8 @@
     <div class="modal-overlay" id="profile-modal">
         <div class="modal-box">
             <div class="modal-title">⚙️ Kulüp Ayarları</div>
-            <div class="form-group"><label>Menajer:</label><input type="text" class="form-input" id="input-manager" value="Murat"></div>
-            <div class="form-group"><label>Takım Adı:</label><input type="text" class="form-input" id="input-team" value="Ankara Gücü FC"></div>
+            <div class="form-group"><label>Menajer:</label><input type="text" class="form-input" id="input-manager" value=""></div>
+            <div class="form-group"><label>Takım Adı:</label><input type="text" class="form-input" id="input-team" value="TFF Takımı"></div>
             <div style="display:flex; gap:8px; margin-top:12px;">
                 <button class="btn btn-green" onclick="saveProfile()">Kaydet</button>
                 <button class="btn" style="background:#334155;" onclick="closeProfileModal()">İptal</button>
@@ -439,7 +439,7 @@ const PLAYERS_DATABASE = {
         { name: "efeffefefefee0", rating: 73 }
     ],
     CM: [
-        { name: "sayrox101", rating: 73 },
+        { name: "Sayrox101", rating: 73 },
         { name: "xslazuri", rating: 89 }, { name: "koroshuffle", rating: 86 },
         { name: "xaviessta", rating: 86 }, { name: "xrazyoy", rating: 86 },
         { name: "ietsunaa", rating: 86 }, { name: "aw0ncy", rating: 86 },
@@ -484,13 +484,19 @@ const PLAYERS_DATABASE = {
     ]
 };
 
+function getRandomManagerName() {
+    const randomNum = Math.floor(Math.random() * 9999) + 1;
+    const paddedNum = String(randomNum).padStart(4, '0');
+    return `AnonimMenejer_${paddedNum}`;
+}
+
 let defaultGameState = {
     coins: 300,
     btc: 0.00,
     wins: 0,
     totalMatches: 0,
-    teamName: "Ankara Gücü FC",
-    managerName: "Murat",
+    teamName: "TFF Takımı",
+    managerName: getRandomManagerName(),
     formation: "4-1-1",
     tactics: "balanced",
     squad: {},
@@ -529,8 +535,8 @@ function generateUnder75Squad() {
         for (let i = 0; i < row.count; i++) {
             const slotKey = `${row.pos}_${i}`;
             if (row.pos === "CM" && i === 0) {
-                // Her yeni oyunda/sıfırlamada ilk CM slotuna sayrox101 garantili gelsin
-                const forced = PLAYERS_DATABASE.CM.find(p => p.name === "sayrox101");
+                // İlk CM slotuna büyük harfle 'Sayrox101' garantili gelsin
+                const forced = PLAYERS_DATABASE.CM.find(p => p.name === "Sayrox101");
                 gameState.squad[slotKey] = { name: forced.name, rating: forced.rating, pos: "CM" };
             } else if (pool.length > 0) {
                 const randPlayer = pool[Math.floor(Math.random() * pool.length)];
@@ -541,11 +547,11 @@ function generateUnder75Squad() {
 }
 
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v68", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v69", JSON.stringify(gameState));
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v68");
+    const saved = localStorage.getItem("tff_draft_save_v69");
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
@@ -563,12 +569,13 @@ function loadGame() {
 }
 
 function resetSaveData() {
-    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve sayrox101 kadronuza eklenecek. Emin misiniz?")) {
-        localStorage.removeItem("tff_draft_save_v68");
+    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve TFF Takımı / rastgele menajer atanacak. Emin misiniz?")) {
+        localStorage.removeItem("tff_draft_save_v69");
         gameState = JSON.parse(JSON.stringify(defaultGameState));
+        gameState.managerName = getRandomManagerName();
         generateUnder75Squad();
         initApp();
-        alert("Oyun tamamen sıfırlandı, sayrox101 kadroya eklendi!");
+        alert("Oyun tamamen sıfırlandı, yeni menajer atandı!");
     }
 }
 
@@ -592,7 +599,7 @@ function initApp() {
     updateBenchUI();
     updateUI();
     renderStatsTable();
-    logConsole("Sistem başarıyla yüklendi (v6.8). sayrox101 veritabanına eklendi.");
+    logConsole("Sistem başarıyla yüklendi (v6.9). Takım adı ve menajer ayarlandı.");
 }
 
 function getRarity(rating) {
@@ -1196,6 +1203,9 @@ function updateUI() {
     document.getElementById("fin-coins").innerText = `$${gameState.coins}`;
     document.getElementById("fin-matches").innerText = gameState.totalMatches;
     document.getElementById("btc-shop-bal").innerText = `${gameState.btc.toFixed(2)} BTC`;
+    
+    document.getElementById("input-manager").value = gameState.managerName;
+    document.getElementById("input-team").value = gameState.teamName;
 }
 
 function openProfileModal() { document.getElementById("profile-modal").style.display = "flex"; }
