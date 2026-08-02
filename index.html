@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.6</title>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.7</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -201,7 +201,7 @@
 
                 <div class="panel">
                     <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
-                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin.</div>
+                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v6.7 Aktif)</div>
                 </div>
             </div>
         </div>
@@ -335,7 +335,7 @@
                     </div>
                 </div>
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize v6.7)</div>
                 </div>
             </div>
             <div class="sidebar">
@@ -450,7 +450,7 @@ const PLAYERS_DATABASE = {
         { name: "Narto_TR", rating: 79 }, { name: "lre2y", rating: 78 },
         { name: "ndngEFEKAN1", rating: 77 }, { name: "ekdtron", rating: 75 },
         { name: "HydraRp20", rating: 74 }, { name: "j4dova", rating: 73 },
-        { name: "iZephyne", rating: 73 }, { name: "Sayrox101", rating: 73 }
+        { name: "iZephyne", rating: 73 }
     ],
     CB: [
         { name: "savic571", rating: 89 }, { name: "ct3nth", rating: 86 },
@@ -536,11 +536,11 @@ function generateUnder75Squad() {
 }
 
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v4", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v67", JSON.stringify(gameState));
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v4");
+    const saved = localStorage.getItem("tff_draft_save_v67");
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
@@ -559,7 +559,7 @@ function loadGame() {
 
 function resetSaveData() {
     if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve 75 altı yeni başlangıç kadrosu verilecek. Emin misiniz?")) {
-        localStorage.removeItem("tff_draft_save_v4");
+        localStorage.removeItem("tff_draft_save_v67");
         gameState = JSON.parse(JSON.stringify(defaultGameState));
         generateUnder75Squad();
         initApp();
@@ -587,7 +587,7 @@ function initApp() {
     updateBenchUI();
     updateUI();
     renderStatsTable();
-    logConsole("Sistem başarıyla yüklendi. Sahalar aktif.");
+    logConsole("Sistem başarıyla yüklendi (v6.7). Sahalar aktif.");
 }
 
 function getRarity(rating) {
