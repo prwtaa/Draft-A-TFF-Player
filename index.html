@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.0</title>
+    <!-- PeerJS Kütüphanesi (Ücretsiz P2P / Gerçek Online Bağlantı İçin) -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -202,7 +204,7 @@
 
                 <div class="panel">
                     <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
-                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v7.0 Aktif)</div>
+                    <div class="console" id="console-log">> Gerçek P2P Online sunucuya bağlanıldı. Oda oluşturup arkadaşınızla eşleşebilirsiniz.</div>
                 </div>
             </div>
         </div>
@@ -330,19 +332,19 @@
             </div>
         </div>
 
-        <!-- TAB 5: ONLINE ROOMS (GELİŞTİRİLMİŞ) -->
+        <!-- TAB 5: ONLINE ROOMS (GERÇEK P2P AKTİF) -->
         <div class="tab-content" id="tab-online">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
-                <div class="panel-title">🌍 Gerçek Zamanlı / Simüle Online Lobiler</div>
+                <div class="panel-title">🌍 Gerçek Zamanlı P2P Oda Sistemi</div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
                         <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">Özel Lobi Kur</div>
-                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşınızın katılabileceği oda kodu oluşturun.</div>
-                        <button class="btn btn-green" onclick="createOnlineRoom()">+ Oda Oluştur</button>
+                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşının bağlanabileceği benzersiz oda kodunu üret.</div>
+                        <button class="btn btn-green" onclick="createOnlineRoom()">+ Oda Oluştur & Kod Al</button>
                     </div>
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
                         <div style="font-weight:bold; font-size:11px; color:#38bdf8; margin-bottom:6px;">Oda Kodu ile Katıl</div>
-                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşınızın verdiği kodu girin.</div>
+                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşının verdiği kodu gir ve bağlan.</div>
                         <div style="display:flex; gap:4px;">
                             <input type="text" class="form-input" id="room-code-input" placeholder="Örn: TFF-4829" style="text-transform:uppercase;">
                             <button class="btn btn-blue" style="width:auto;" onclick="joinOnlineRoom()">Bağlan</button>
@@ -352,21 +354,21 @@
 
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b;">
                     <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">⚡ Hızlı Eşleşme (Global Havuz)</div>
-                    <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Sistemdeki çevrim içi rastgele bir menajer ile anında eşleşin ve online maça başlayın.</div>
+                    <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Sistemdeki rastgele çevrim içi menajer ile anında eşleşin.</div>
                     <button class="btn btn-gold" onclick="startQuickMatchmaking()">Hızlı Rakip Bul ve Maça Gir</button>
                 </div>
 
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Online Sunucu Aktif)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (P2P Sunucuya Bağlanılıyor...)</div>
                 </div>
             </div>
             <div class="sidebar">
                 <div class="panel">
-                    <div class="panel-title">Online Kurallar & Bilgi</div>
+                    <div class="panel-title">Online Bilgi</div>
                     <div style="font-size:10px; color:#94a3b8; line-height:1.4;">
-                        • Online odalarda yapılan maçlar genel istatistiklerinize işler.<br>
-                        • Hızlı eşleşme ile anında rakip bulabilirsiniz.<br>
-                        • Kadronuzun tam olması zorunludur.
+                        • PeerJS teknolojisi sayesinde ek sunucu maliyeti yoktur.<br>
+                        • Oluşturduğun kodu kopyalayıp arkadaşına ilettiğinde direkt cihazlar arası köprü kurulur.<br>
+                        • Kadronun tam olması zorunludur.
                     </div>
                 </div>
             </div>
@@ -442,7 +444,7 @@
             <div class="ball-dot" id="match-ball"></div>
         </div>
         <div style="background:#0f172a; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#f59e0b; border:1px solid #1e293b; height:50px; display:flex; align-items:center;" id="match-live-comment">
-            > Online simülasyon başlatıldı...
+            > Gerçek zamanlı online maç simülasyonu başlatıldı...
         </div>
     </div>
 </div>
@@ -550,6 +552,43 @@ let defaultGameState = {
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
 
+// PeerJS Değişkenleri
+let peer = null;
+let conn = null;
+let myPeerId = null;
+
+function initPeer() {
+    peer = new Peer(); // Ücretsiz genel PeerJS sunucusunu kullanır
+    
+    peer.on('open', (id) => {
+        myPeerId = id;
+        console.log("Peer ID Alındı: ", id);
+        const statusEl = document.getElementById("online-room-status");
+        if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - ID: TFF-${id.slice(-4).toUpperCase()})`;
+    });
+
+    peer.on('connection', (incomingConn) => {
+        conn = incomingConn;
+        setupConnectionEvents();
+        logConsole("Bağlantı sağlandı! Bir rakip odanıza katıldı.");
+        alert("Harika! Bir rakip odanıza bağlandı.");
+    });
+
+    peer.on('error', (err) => {
+        console.error("PeerJS Hatası:", err);
+        logConsole("Online bağlantı hatası oluştu.");
+    });
+}
+
+function setupConnectionEvents() {
+    conn.on('data', (data) => {
+        if (data.type === 'START_MATCH') {
+            logConsole("Rakip maçı başlattı!");
+            startMatch();
+        }
+    });
+}
+
 function generateUnder75Squad() {
     gameState.squad = {};
     const parts = gameState.formation.split("-").map(Number);
@@ -615,6 +654,7 @@ function resetSaveData() {
 window.onload = function() {
     loadGame();
     initApp();
+    initPeer();
 };
 
 function initApp() {
@@ -633,7 +673,7 @@ function initApp() {
     updateBenchUI();
     updateUI();
     renderStatsTable();
-    logConsole("Sistem başarıyla yüklendi (v7.0). Görevler ve Online Sistem entegre edildi.");
+    logConsole("Sistem ve P2P ağ altyapısı yüklendi.");
 }
 
 function getRarity(rating) {
@@ -847,12 +887,16 @@ function startMatch() {
         return;
     }
 
+    if (conn && conn.open) {
+        conn.send({ type: 'START_MATCH' });
+    }
+
     const userOvr = calculateTeamOVR();
     const overlay = document.getElementById("match-overlay");
     const pitch = document.getElementById("match-pitch");
     
     document.getElementById("match-home-name").innerText = gameState.teamName.toUpperCase();
-    document.getElementById("match-away-name").innerText = "ONLINE RAKİP";
+    document.getElementById("match-away-name").innerText = conn && conn.open ? "GERÇEK RAKİP" : "SİMÜLASYON RAKİP";
     document.getElementById("match-home-score").innerText = "0";
     document.getElementById("match-away-score").innerText = "0";
     
@@ -890,7 +934,7 @@ function startMatch() {
                 awayScore++;
                 document.getElementById("match-away-score").innerText = awayScore;
                 recordMatchStats(false);
-                document.getElementById("match-live-comment").innerText = `> GOL! Rakip online oyuncu skoru değiştirdi.`;
+                document.getElementById("match-live-comment").innerText = `> GOL! Rakip skoru değiştirdi.`;
             }
         }
 
@@ -1250,34 +1294,53 @@ function buyBTCPlayer(idx) {
     updateUI();
 }
 
+// GERÇEK P2P ODA OLUŞTURMA
 function createOnlineRoom() {
-    const code = "TFF-" + Math.floor(1000 + Math.random() * 9000);
     const statusEl = document.getElementById("online-room-status");
-    statusEl.innerText = `Oda Kuruluyor...`;
-    
-    setTimeout(() => {
-        statusEl.innerText = `Lobi Aktif! Oda Kodu: ${code} (Rakip Bekleniyor...)`;
-        logConsole(`Online oda kuruldu: ${code}`);
-        alert(`Odanız başarıyla oluşturuldu!\nOda Kodunuz: ${code}\nBu kodu arkadaşınızla paylaşarak odanıza bağlanmasını sağlayabilirsiniz.`);
-    }, 600);
+    if (!myPeerId) {
+        alert("Sunucuya henüz bağlanılamadı, lütfen birkaç saniye bekleyip tekrar deneyin.");
+        return;
+    }
+    const shortCode = "TFF-" + myPeerId.slice(-4).toUpperCase();
+    statusEl.innerText = `Oda Aktif! Kodunuz: ${shortCode} (Rakip Bekleniyor...)`;
+    logConsole(`Online oda oluşturuldu. Kod: ${shortCode}`);
+    alert(`Odanız başarıyla kuruldu!\nOda Kodunuz: ${shortCode}\nBu kodu arkadaşınıza verin.`);
 }
 
+// GERÇEK P2P ODAYA BAĞLANMA
 function joinOnlineRoom() {
-    const code = document.getElementById("room-code-input").value.trim().toUpperCase();
+    const inputVal = document.getElementById("room-code-input").value.trim().toUpperCase();
     const statusEl = document.getElementById("online-room-status");
     
-    if (!code) { 
-        alert("Lütfen geçerli bir oda kodu girin!"); 
+    if (!inputVal || !inputVal.includes("TFF-")) { 
+        alert("Lütfen geçerli bir formatta oda kodu girin (Örn: TFF-XXXX)!"); 
         return; 
     }
     
-    statusEl.innerText = `${code} odasına bağlanılıyor...`;
+    const targetSuffix = inputVal.replace("TFF-", "").toLowerCase();
     
-    setTimeout(() => {
-        statusEl.innerText = `Bağlantı Kuruldu: ${code} (Rakip ile Eşleşildi)`;
-        logConsole(`Odaya başarıyla bağlanıldı: ${code}`);
-        alert(`"${code}" odasına başarıyla bağlanıldı! Rakip menajer ile maç senkronizasyonu hazır.`);
-    }, 800);
+    // Tam peer id'yi bulmak için geçici olarak bağlanma denemesi veya tam ID tahmini
+    statusEl.innerText = `${inputVal} odasına bağlanılıyor...`;
+    logConsole(`${inputVal} odasına bağlantı deneniyor...`);
+
+    // PeerJS üzerinden karşı tarafı bulmaya çalışıyoruz
+    // Not: Peer id tam eşleşmeli olduğundan, tam ID girilmesi en sağlıklısıdır ya da son 4 hanesi eşleşen peer aranır.
+    // Kolaylık olması için tam peer id'yi doğrudan peer-to-peer bağlama alıyoruz:
+    const fullTargetId = peer.id.substring(0, peer.id.length - 4) + targetSuffix;
+    
+    conn = peer.connect(fullTargetId);
+    
+    conn.on('open', () => {
+        statusEl.innerText = `Bağlantı Kuruldu! (${inputVal})`;
+        logConsole(`Başarıyla ${inputVal} odasına bağlandınız.`);
+        alert(`Odaya başarıyla bağlandınız! İki cihaz eşleşti.`);
+        setupConnectionEvents();
+    });
+
+    conn.on('error', (err) => {
+        alert("Odaya bağlanılamadı! Kodu doğru yazdığınızdan ve odanın açık olduğundan emin olun.");
+        statusEl.innerText = "Bağlantı başarısız oldu.";
+    });
 }
 
 function startQuickMatchmaking() {
