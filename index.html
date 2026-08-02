@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.7</title>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.8</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -201,7 +201,7 @@
 
                 <div class="panel">
                     <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
-                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v6.7 Aktif)</div>
+                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v6.8 Aktif - sayrox101 eklendi)</div>
                 </div>
             </div>
         </div>
@@ -335,7 +335,7 @@
                     </div>
                 </div>
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize v6.7)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize v6.8)</div>
                 </div>
             </div>
             <div class="sidebar">
@@ -439,6 +439,7 @@ const PLAYERS_DATABASE = {
         { name: "efeffefefefee0", rating: 73 }
     ],
     CM: [
+        { name: "sayrox101", rating: 73 },
         { name: "xslazuri", rating: 89 }, { name: "koroshuffle", rating: 86 },
         { name: "xaviessta", rating: 86 }, { name: "xrazyoy", rating: 86 },
         { name: "ietsunaa", rating: 86 }, { name: "aw0ncy", rating: 86 },
@@ -527,7 +528,11 @@ function generateUnder75Squad() {
         const pool = PLAYERS_DATABASE[row.pos].filter(p => p.rating < 75);
         for (let i = 0; i < row.count; i++) {
             const slotKey = `${row.pos}_${i}`;
-            if (pool.length > 0) {
+            if (row.pos === "CM" && i === 0) {
+                // Her yeni oyunda/sıfırlamada ilk CM slotuna sayrox101 garantili gelsin
+                const forced = PLAYERS_DATABASE.CM.find(p => p.name === "sayrox101");
+                gameState.squad[slotKey] = { name: forced.name, rating: forced.rating, pos: "CM" };
+            } else if (pool.length > 0) {
                 const randPlayer = pool[Math.floor(Math.random() * pool.length)];
                 gameState.squad[slotKey] = { name: randPlayer.name, rating: randPlayer.rating, pos: row.pos };
             }
@@ -536,11 +541,11 @@ function generateUnder75Squad() {
 }
 
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v67", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v68", JSON.stringify(gameState));
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v67");
+    const saved = localStorage.getItem("tff_draft_save_v68");
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
@@ -558,12 +563,12 @@ function loadGame() {
 }
 
 function resetSaveData() {
-    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve 75 altı yeni başlangıç kadrosu verilecek. Emin misiniz?")) {
-        localStorage.removeItem("tff_draft_save_v67");
+    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve sayrox101 kadronuza eklenecek. Emin misiniz?")) {
+        localStorage.removeItem("tff_draft_save_v68");
         gameState = JSON.parse(JSON.stringify(defaultGameState));
         generateUnder75Squad();
         initApp();
-        alert("Oyun tamamen sıfırlandı ve başlangıç kadrosu yüklendi!");
+        alert("Oyun tamamen sıfırlandı, sayrox101 kadroya eklendi!");
     }
 }
 
@@ -587,7 +592,7 @@ function initApp() {
     updateBenchUI();
     updateUI();
     renderStatsTable();
-    logConsole("Sistem başarıyla yüklendi (v6.7). Sahalar aktif.");
+    logConsole("Sistem başarıyla yüklendi (v6.8). sayrox101 veritabanına eklendi.");
 }
 
 function getRarity(rating) {
