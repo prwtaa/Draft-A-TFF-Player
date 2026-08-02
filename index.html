@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.9</title>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.0</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -19,7 +19,7 @@
         .profile-team-name { font-weight: 900; font-size: 13px; color: #f59e0b; display: flex; align-items: center; gap: 6px; }
         .profile-manager-name { font-size: 10px; color: #94a3b8; }
 
-        .nav-tabs { display: flex; gap: 4px; }
+        .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
         .nav-tab { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .nav-tab:hover, .nav-tab.active { background: #d97706; color: #fff; border-color: #f59e0b; }
 
@@ -124,6 +124,7 @@
             <div class="nav-tab active" onclick="switchTab('squad', this)">Kadro & Maç</div>
             <div class="nav-tab" onclick="switchTab('market', this)">🌍 Online Pazar</div>
             <div class="nav-tab" onclick="switchTab('btcshop', this)" style="background:#78350f; color:#f7931a;">₿ BTC Shop</div>
+            <div class="nav-tab" onclick="switchTab('quests', this)" style="background:#065f46; color:#10b981;">🎯 Görevler</div>
             <div class="nav-tab" onclick="switchTab('office', this)">Kulüp Yönetimi</div>
             <div class="nav-tab" onclick="switchTab('stats', this)">📊 İstatistikler</div>
             <div class="nav-tab" onclick="switchTab('online', this)" style="background:#047857; color:#fff;">🌍 Online Odalar</div>
@@ -201,7 +202,7 @@
 
                 <div class="panel">
                     <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
-                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v6.9 Aktif - Sayrox101 eklendi)</div>
+                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin. (v7.0 Aktif)</div>
                 </div>
             </div>
         </div>
@@ -249,6 +250,18 @@
                         Mevcut BTC: <b class="c-btc" id="btc-shop-bal">0.00 BTC</b><br><br>
                         Admin panelinden eklenen süreli prime kartlar burada listelenir.
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB QUESTS -->
+        <div class="tab-content" id="tab-quests">
+            <div class="panel" style="display:flex; flex-direction:column; gap:12px; grid-column:span 2;">
+                <div class="panel-title">🎯 Günlük ve Kariyer Görevleri (Bitcoin Ödüllü)</div>
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">Aşağıdaki görevleri tamamlayarak doğrudan Bitcoin (BTC) ödülleri kazanabilirsiniz!</div>
+                
+                <div style="display:flex; flex-direction:column; gap:8px;" id="quests-container">
+                    <!-- Dinamik Görevler -->
                 </div>
             </div>
         </div>
@@ -317,31 +330,44 @@
             </div>
         </div>
 
-        <!-- TAB 5: ONLINE ROOMS -->
+        <!-- TAB 5: ONLINE ROOMS (GELİŞTİRİLMİŞ) -->
         <div class="tab-content" id="tab-online">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
-                <div class="panel-title">🌍 Online Maç Lobileri (Fix)</div>
+                <div class="panel-title">🌍 Gerçek Zamanlı / Simüle Online Lobiler</div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
-                        <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">Oda Kur</div>
-                        <button class="btn btn-green" onclick="createOnlineRoom()">+ Lobi Oluştur</button>
+                        <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">Özel Lobi Kur</div>
+                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşınızın katılabileceği oda kodu oluşturun.</div>
+                        <button class="btn btn-green" onclick="createOnlineRoom()">+ Oda Oluştur</button>
                     </div>
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
-                        <div style="font-weight:bold; font-size:11px; color:#38bdf8; margin-bottom:6px;">Kod ile Katıl</div>
+                        <div style="font-weight:bold; font-size:11px; color:#38bdf8; margin-bottom:6px;">Oda Kodu ile Katıl</div>
+                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşınızın verdiği kodu girin.</div>
                         <div style="display:flex; gap:4px;">
-                            <input type="text" class="form-input" id="room-code-input" placeholder="Oda Kodu" style="text-transform:uppercase;">
+                            <input type="text" class="form-input" id="room-code-input" placeholder="Örn: TFF-4829" style="text-transform:uppercase;">
                             <button class="btn btn-blue" style="width:auto;" onclick="joinOnlineRoom()">Bağlan</button>
                         </div>
                     </div>
                 </div>
+
+                <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b;">
+                    <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">⚡ Hızlı Eşleşme (Global Havuz)</div>
+                    <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Sistemdeki çevrim içi rastgele bir menajer ile anında eşleşin ve online maça başlayın.</div>
+                    <button class="btn btn-gold" onclick="startQuickMatchmaking()">Hızlı Rakip Bul ve Maça Gir</button>
+                </div>
+
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize v6.9)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Online Sunucu Aktif)</div>
                 </div>
             </div>
             <div class="sidebar">
                 <div class="panel">
-                    <div class="panel-title">Sunucu Bilgisi</div>
-                    <div style="font-size:10px; color:#94a3b8;">Lobi ve maç verileri eşleme protokolüyle sabitlendi.</div>
+                    <div class="panel-title">Online Kurallar & Bilgi</div>
+                    <div style="font-size:10px; color:#94a3b8; line-height:1.4;">
+                        • Online odalarda yapılan maçlar genel istatistiklerinize işler.<br>
+                        • Hızlı eşleşme ile anında rakip bulabilirsiniz.<br>
+                        • Kadronuzun tam olması zorunludur.
+                    </div>
                 </div>
             </div>
         </div>
@@ -514,7 +540,12 @@ let defaultGameState = {
     sponsor: "tff",
     sponsorBonusAcc: 0,
     playerStats: {}, 
-    adminSequence: []
+    adminSequence: [],
+    quests: [
+        { id: 1, title: "Kolay Görev: 1 Maç Kazan", desc: "Online veya normal modda 1 maç galibiyeti al.", reward: 0.1, type: "win", target: 1, progress: 0, completed: false },
+        { id: 2, title: "Orta Görev: 3 Maç Tamamla", desc: "Toplamda 3 defa maça çık ve tamamla.", reward: 0.3, type: "match", target: 3, progress: 0, completed: false },
+        { id: 3, title: "Zor Görev: Kadro GEN 80+ Yap", desc: "Sahadaki ilk 11 ortalamasını 80 ve üzerine çıkar.", reward: 0.5, type: "ovr", target: 80, progress: 0, completed: false }
+    ]
 };
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
@@ -535,7 +566,6 @@ function generateUnder75Squad() {
         for (let i = 0; i < row.count; i++) {
             const slotKey = `${row.pos}_${i}`;
             if (row.pos === "CM" && i === 0) {
-                // İlk CM slotuna büyük harfle 'Sayrox101' garantili gelsin
                 const forced = PLAYERS_DATABASE.CM.find(p => p.name === "Sayrox101");
                 gameState.squad[slotKey] = { name: forced.name, rating: forced.rating, pos: "CM" };
             } else if (pool.length > 0) {
@@ -547,17 +577,20 @@ function generateUnder75Squad() {
 }
 
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v69", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v70", JSON.stringify(gameState));
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v69");
+    const saved = localStorage.getItem("tff_draft_save_v70");
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
             gameState = { ...defaultGameState, ...parsed };
             if (!gameState.squad || Object.keys(gameState.squad).length === 0) {
                 generateUnder75Squad();
+            }
+            if (!gameState.quests) {
+                gameState.quests = JSON.parse(JSON.stringify(defaultGameState.quests));
             }
         } catch (e) {
             console.error("Kayıt yüklenemedi:", e);
@@ -570,7 +603,7 @@ function loadGame() {
 
 function resetSaveData() {
     if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve TFF Takımı / rastgele menajer atanacak. Emin misiniz?")) {
-        localStorage.removeItem("tff_draft_save_v69");
+        localStorage.removeItem("tff_draft_save_v70");
         gameState = JSON.parse(JSON.stringify(defaultGameState));
         gameState.managerName = getRandomManagerName();
         generateUnder75Squad();
@@ -596,10 +629,11 @@ function initApp() {
     renderFormationSlots();
     renderMarketUI();
     renderBTCShopUI();
+    renderQuestsUI();
     updateBenchUI();
     updateUI();
     renderStatsTable();
-    logConsole("Sistem başarıyla yüklendi (v6.9). Takım adı ve menajer ayarlandı.");
+    logConsole("Sistem başarıyla yüklendi (v7.0). Görevler ve Online Sistem entegre edildi.");
 }
 
 function getRarity(rating) {
@@ -884,6 +918,7 @@ function recordMatchStats(isHomeGoal) {
 function finishMatch(home, away) {
     gameState.totalMatches++;
     let reward = 30 + (gameState.stadiumLevel * 10);
+    const isWin = home > away;
 
     Object.values(gameState.squad).forEach(p => {
         if (p) {
@@ -895,7 +930,7 @@ function finishMatch(home, away) {
         }
     });
 
-    if (home > away) {
+    if (isWin) {
         gameState.wins++;
         reward += 60;
         alert(`TEBRİKLER! Maçı ${home}-${away} kazandınız. Ödül: $${reward}`);
@@ -907,9 +942,72 @@ function finishMatch(home, away) {
     }
 
     gameState.coins += reward;
+    checkQuestProgress(isWin);
     saveGame();
     updateUI();
     renderStatsTable();
+}
+
+function checkQuestProgress(isWin) {
+    const currentOvr = calculateTeamOVR();
+    gameState.quests.forEach(q => {
+        if (!q.completed) {
+            if (q.type === "win" && isWin) {
+                q.progress = Math.min(q.target, q.progress + 1);
+            } else if (q.type === "match") {
+                q.progress = Math.min(q.target, q.progress + 1);
+            } else if (q.type === "ovr") {
+                q.progress = currentOvr;
+            }
+        }
+    });
+    renderQuestsUI();
+}
+
+function renderQuestsUI() {
+    const container = document.getElementById("quests-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    gameState.quests.forEach(q => {
+        const isReady = !q.completed && ((q.type === "ovr" && q.progress >= q.target) || (q.type !== "ovr" && q.progress >= q.target));
+        
+        const card = document.createElement("div");
+        card.style.background = "#0a0e14";
+        card.style.border = "1px solid #1e293b";
+        card.style.padding = "10px 12px";
+        card.style.borderRadius = "8px";
+        card.style.display = "flex";
+        card.style.justifyContent = "space-between";
+        card.style.alignItems = "center";
+
+        card.innerHTML = `
+            <div>
+                <div style="font-weight:bold; font-size:11px; color:#f59e0b;">${q.title}</div>
+                <div style="font-size:10px; color:#94a3b8; margin:2px 0;">${q.desc}</div>
+                <div style="font-size:10px; color:#38bdf8;">İlerleme: ${q.progress} / ${q.target} | Ödül: <b class="c-btc">${q.reward} BTC</b></div>
+            </div>
+            <div>
+                ${q.completed ? '<span style="color:#10b981; font-weight:bold; font-size:11px;">✔️ Tamamlandı</span>' : 
+                  isReady ? `<button class="btn btn-btc" style="padding:6px 12px;" onclick="claimQuestReward(${q.id})">Ödülü Al</button>` : 
+                  '<span style="color:#64748b; font-size:10px;">Devam Ediyor</span>'}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function claimQuestReward(id) {
+    const q = gameState.quests.find(item => item.id === id);
+    if (!q || q.completed) return;
+
+    q.completed = true;
+    gameState.btc += q.reward;
+    saveGame();
+    renderQuestsUI();
+    updateUI();
+    alert(`Tebrikler! ${q.reward} BTC cüzdanınıza eklendi.`);
+    logConsole(`${q.reward} BTC görev ödülü alındı.`);
 }
 
 function renderStatsTable() {
@@ -1160,6 +1258,7 @@ function createOnlineRoom() {
     setTimeout(() => {
         statusEl.innerText = `Lobi Aktif! Oda Kodu: ${code} (Rakip Bekleniyor...)`;
         logConsole(`Online oda kuruldu: ${code}`);
+        alert(`Odanız başarıyla oluşturuldu!\nOda Kodunuz: ${code}\nBu kodu arkadaşınızla paylaşarak odanıza bağlanmasını sağlayabilirsiniz.`);
     }, 600);
 }
 
@@ -1175,10 +1274,25 @@ function joinOnlineRoom() {
     statusEl.innerText = `${code} odasına bağlanılıyor...`;
     
     setTimeout(() => {
-        statusEl.innerText = `Başarıyla Bağlanıldı: ${code} (Maça Hazır)`;
+        statusEl.innerText = `Bağlantı Kuruldu: ${code} (Rakip ile Eşleşildi)`;
         logConsole(`Odaya başarıyla bağlanıldı: ${code}`);
-        alert(`"${code}" odasındaki rakiple eşleştiniz! Maça başlayabilirsiniz.`);
+        alert(`"${code}" odasına başarıyla bağlanıldı! Rakip menajer ile maç senkronizasyonu hazır.`);
     }, 800);
+}
+
+function startQuickMatchmaking() {
+    const statusEl = document.getElementById("online-room-status");
+    statusEl.innerText = "Hızlı Eşleşme: Çevrim içi rakipler aranıyor...";
+    logConsole("Hızlı eşleşme başlatıldı...");
+
+    setTimeout(() => {
+        const opponentManager = getRandomManagerName();
+        statusEl.innerText = `Eşleşme Başarılı! Rakip: ${opponentManager}`;
+        logConsole(`Online rakip bulundu: ${opponentManager}`);
+        alert(`Rastgele çevrim içi menajer (${opponentManager}) ile eşleştiniz! Maç ekranına yönlendiriliyorsunuz.`);
+        switchTab('squad', document.querySelector('.nav-tab'));
+        startMatch();
+    }, 1200);
 }
 
 function switchTab(tabId, el) {
@@ -1187,6 +1301,7 @@ function switchTab(tabId, el) {
     document.getElementById(`tab-${tabId}`).classList.add("active");
     if (el) el.classList.add("active");
     if (tabId === 'market') renderMarketUI();
+    if (tabId === 'quests') renderQuestsUI();
 }
 
 function updateUI() {
