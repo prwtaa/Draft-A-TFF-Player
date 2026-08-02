@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.5</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
+        body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
+        
+        .game-wrapper { width: 100%; max-width: 1400px; background: #0a0e14; border-radius: 14px; border: 1px solid #1e293b; box-shadow: 0 20px 60px rgba(0,0,0,0.98); overflow: hidden; position: relative; display: flex; flex-direction: column; height: 98vh; max-height: 940px; }
+        
+        /* Top Navigation Bar */
+        .top-bar { background: #0f172a; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; flex-shrink: 0; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px 10px; border-radius: 8px; background: #090d16; border: 1px solid #334155; transition: 0.2s; }
+        .user-profile:hover { border-color: #f59e0b; background: #131d2e; }
+        .profile-logo { width: 38px; height: 38px; border-radius: 50%; background: #311042; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .profile-info { display: flex; flex-direction: column; }
+        .profile-team-name { font-weight: 900; font-size: 13px; color: #f59e0b; display: flex; align-items: center; gap: 6px; }
+        .profile-manager-name { font-size: 10px; color: #94a3b8; }
+
+        .nav-tabs { display: flex; gap: 4px; }
+        .nav-tab { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .nav-tab:hover, .nav-tab.active { background: #d97706; color: #fff; border-color: #f59e0b; }
+
+        .stats { display: flex; gap: 8px; }
+        .stat-box { background: #090d16; padding: 5px 10px; border-radius: 6px; border: 1px solid #334155; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .c-green { color: #10b981; } .c-gold { color: #f59e0b; } .c-prime { color: #c084fc; } .c-btc { color: #f7931a; }
+
+        /* Content Container */
+        .content-body { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: 1fr 370px; gap: 12px; }
+        .tab-content { display: none; width: 100%; grid-column: span 2; grid-template-columns: 1fr 370px; gap: 12px; }
+        .tab-content.active { display: grid; }
+
+        /* Squad & Formation Panel */
+        .pitch-panel { display: flex; flex-direction: column; gap: 10px; }
+        
+        .controls-bar { background: #0f172a; padding: 8px 12px; border-radius: 8px; border: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+        .select-custom { background: #0a0e14; border: 1px solid #334155; color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
+
+        .pitch { background: linear-gradient(180deg, #065f46 0%, #022c22 100%); border: 3px solid #f59e0b; border-radius: 12px; height: 430px; position: relative; display: flex; flex-direction: column; justify-content: space-around; padding: 15px 10px; box-shadow: inset 0 0 50px rgba(0,0,0,0.85), 0 0 20px rgba(245, 158, 11, 0.25); }
+        .pitch-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(245, 158, 11, 0.35); }
+        .pitch-circle { position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; border: 2px solid rgba(245, 158, 11, 0.35); border-radius: 50%; transform: translate(-50%, -50%); }
+
+        .pitch-row { display: flex; justify-content: space-around; z-index: 2; width: 100%; align-items: center; }
+        
+        /* KART STYLES & SLOT */
+        .slot { width: 72px; height: 94px; background: rgba(10, 14, 20, 0.88); border: 2px dashed #475569; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; font-size: 10px; text-align: center; position: relative; }
+        .slot.drag-over { border-color: #10b981; background: rgba(16, 185, 129, 0.2); transform: scale(1.08); }
+        .slot.filled { border-style: solid; }
+
+        .r-Common { border-color: #64748b !important; background: #1e293b !important; }
+        .r-Rare { border-color: #3b82f6 !important; background: linear-gradient(135deg, #1e3a8a, #0a0e14) !important; box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+        .r-Epic { border-color: #a855f7 !important; background: linear-gradient(135deg, #581c87, #0a0e14) !important; box-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+        .r-Legendary { border-color: #f59e0b !important; background: linear-gradient(135deg, #78350f, #0a0e14) !important; box-shadow: 0 0 12px rgba(245, 158, 11, 0.7); }
+        .r-Prime { border: 2px solid #f59e0b !important; background: linear-gradient(135deg, #0f172a 0%, #3b1042 50%, #78350f 100%) !important; box-shadow: 0 0 18px rgba(245, 158, 11, 0.9), inset 0 0 12px rgba(192, 132, 252, 0.8) !important; }
+
+        .card-name { font-weight: bold; font-size: 9px; max-width: 62px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .card-ovr { font-size: 13px; font-weight: 900; color: #f59e0b; }
+        .card-pos { font-size: 8px; background: rgba(0,0,0,0.65); padding: 1px 4px; border-radius: 3px; color: #f59e0b; }
+        .prime-badge { font-size: 7px; background: #f59e0b; color: #000; font-weight: 900; padding: 1px 4px; border-radius: 3px; margin-top: 2px; letter-spacing: 0.5px; box-shadow: 0 0 6px #f59e0b; }
+
+        /* Sidebar & Panels */
+        .sidebar { display: flex; flex-direction: column; gap: 10px; }
+        .panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; }
+        .panel-title { font-size: 11px; font-weight: bold; color: #f59e0b; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
+
+        .btn { background: #e11d48; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 11px; text-transform: uppercase; }
+        .btn:hover { filter: brightness(1.2); }
+        .btn-green { background: #059669; }
+        .btn-blue { background: #2563eb; }
+        .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); border: 1px solid #f59e0b; }
+        .btn-btc { background: linear-gradient(135deg, #f7931a, #d97706); border: 1px solid #f7931a; color: #fff; }
+
+        .pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .pack-card { background: #0a0e14; border: 1px solid #1e293b; padding: 8px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .pack-card:hover { border-color: #f59e0b; transform: translateY(-2px); }
+
+        .inventory { max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .inv-item { background: #0a0e14; padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #64748b; font-size: 10px; cursor: grab; }
+        .inv-item:active { cursor: grabbing; }
+
+        .console { background: #030508; height: 85px; border-radius: 6px; padding: 6px; font-family: monospace; font-size: 10px; color: #f59e0b; overflow-y: auto; border: 1px solid #1e293b; }
+
+        /* MARKET & OTHER TABS VIEW */
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 400px; overflow-y: auto; padding: 4px; }
+        .market-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; gap: 5px; }
+
+        /* Modals */
+        .modal-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); z-index: 99; display: none; justify-content: center; align-items: center; backdrop-filter: blur(6px); }
+        .modal-box { background: #0f172a; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; width: 380px; box-shadow: 0 0 30px rgba(245, 158, 11, 0.35); }
+        .modal-title { font-size: 14px; font-weight: bold; color: #f59e0b; margin-bottom: 12px; text-align: center; }
+        .form-group { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 10px; color: #94a3b8; font-weight: bold; }
+        .form-input { background: #0a0e14; border: 1px solid #334155; color: #fff; padding: 8px; border-radius: 6px; font-size: 11px; width: 100%; }
+
+        /* MATCH OVERLAY */
+        .match-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #030508; z-index: 50; display: none; flex-direction: column; padding: 10px; }
+        .match-header { background: #0f172a; padding: 10px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1e293b; margin-bottom: 8px; }
+        .score-board { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #f59e0b; }
+        .pitch-container { flex: 1; background: #065f46; border: 2px solid #f59e0b; border-radius: 8px; position: relative; overflow: hidden; }
+        .center-line { position: absolute; top:0; left:50%; width:2px; height:100%; background: rgba(245, 158, 11, 0.45); }
+        .center-circle { position: absolute; top:50%; left:50%; width:90px; height:90px; border:2px solid rgba(245, 158, 11, 0.45); border-radius:50%; transform: translate(-50%, -50%); }
+        .player-dot { position: absolute; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: bold; color: #fff; transition: left 0.25s ease-out, top 0.25s ease-out; border: 2px solid #fff; transform: translate(-50%, -50%); }
+        .team-home { background: #2563eb; border-color: #f59e0b; } 
+        .team-away { background: #dc2626; border-color: #fb7185; } 
+        .ball-dot { position: absolute; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; transition: left 0.2s ease-out, top 0.2s ease-out; box-shadow: 0 0 8px #f59e0b; z-index: 10; transform: translate(-50%, -50%); }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="user-profile" onclick="openProfileModal()">
+            <div class="profile-logo" id="ui-profile-logo">👑</div>
+            <div class="profile-info">
+                <div class="profile-team-name"><span id="ui-team-name">Ankara Gücü FC</span> ✏️</div>
+                <div class="profile-manager-name">Menajer: <span id="ui-manager-name">Murat</span></div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('squad', this)">Kadro & Maç</div>
+            <div class="nav-tab" onclick="switchTab('market', this)">🌍 Online Pazar</div>
+            <div class="nav-tab" onclick="switchTab('btcshop', this)" style="background:#78350f; color:#f7931a;">₿ BTC Shop</div>
+            <div class="nav-tab" onclick="switchTab('office', this)">Kulüp Yönetimi</div>
+            <div class="nav-tab" onclick="switchTab('stats', this)">📊 İstatistikler</div>
+            <div class="nav-tab" onclick="switchTab('online', this)" style="background:#047857; color:#fff;">🌍 Online Odalar</div>
+            <div class="nav-tab" id="admin-nav-tab" onclick="switchTab('admin', this)" style="display:none; background:#dc2626; color:#fff;">👑 Admin Panel</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box" onclick="handleSecretClick('coin')">Coin: <span class="c-green" id="ui-coins">$300</span></div>
+            <div class="stat-box" onclick="handleSecretClick('btc')">BTC: <span class="c-btc" id="ui-btc">0.00 ₿</span></div>
+            <div class="stat-box">Galibiyet: <span class="c-gold" id="ui-wins">0</span></div>
+            <div class="stat-box">Kadro GEN: <span class="c-prime" id="ui-ovr">0</span></div>
+            <div class="stat-box" onclick="resetSaveData()" style="background:#451a03; color:#f87171;" title="Bozuk verileri sıfırla">🔄 Sıfırla</div>
+        </div>
+    </div>
+
+    <!-- Content Body -->
+    <div class="content-body">
+        
+        <!-- TAB 1: SQUAD & MATCH -->
+        <div class="tab-content active" id="tab-squad">
+            <div class="pitch-panel">
+                <div class="controls-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span>Diziliş:</span>
+                        <select class="select-custom" id="formation-select" onchange="changeFormation(this.value)">
+                            <option value="4-1-1">4-1-1 (4 Def, 1 Ort, 1 Forv + GK)</option>
+                            <option value="3-2-1">3-2-1 (3 Def, 2 Ort, 1 Forv + GK)</option>
+                            <option value="2-2-2">2-2-2 (2 Def, 2 Ort, 2 Forv + GK)</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span>Taktik:</span>
+                        <select class="select-custom" id="tactics-select" onchange="changeTactics(this.value)">
+                            <option value="balanced">Dengeli</option>
+                            <option value="offensive">Ofansif (Agressif Baskı)</option>
+                            <option value="defensive">Defansif (Derin Blok)</option>
+                            <option value="tikitaka">Tiki-Taka (Pas Oyunu)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pitch" id="pitch-view">
+                    <div class="pitch-line"></div>
+                    <div class="pitch-circle"></div>
+                    <div id="formation-slots-container" style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%; position:relative; z-index:2;"></div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-gold" style="font-size: 12px; padding: 12px;" onclick="startMatch()">⚽ ONLINE / 2D MAÇI BAŞLAT</button>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">Draft Mağazası & Paketler</div>
+                    <div class="pack-grid">
+                        <div class="pack-card" onclick="openPack('bronze')">
+                            <div style="font-weight:bold; font-size:10px;">Standart Draft</div>
+                            <div class="c-green" style="font-size:10px; margin-top:2px;">$30</div>
+                        </div>
+                        <div class="pack-card" onclick="openPack('gold')">
+                            <div style="font-weight:bold; font-size:10px; color:#f59e0b;">Süper Draft</div>
+                            <div class="c-gold" style="font-size:10px; margin-top:2px;">$80</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>Yedek Kulübesi (Sürükle & Bırak)</span>
+                        <button style="background:none; border:none; color:#f59e0b; cursor:pointer; font-size:10px;" onclick="fuseDuplicates()">[Birleştir]</button>
+                    </div>
+                    <div class="inventory" id="inv-list"></div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
+                    <div class="console" id="console-log">> Online sunucuya bağlanıldı. Oyuncuları sürükleyerek sahaya yerleştirin.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TRANSFER MARKET -->
+        <div class="tab-content" id="tab-market">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:12px; font-weight:bold; color:#f59e0b;">🌍 Global Online Transfer Pazarı</div>
+                    <button class="btn btn-blue" style="width:auto; padding:4px 8px; font-size:10px;" onclick="refreshMarket()">Pazarı Yenile ($15)</button>
+                </div>
+                <div class="market-grid" id="market-list"></div>
+            </div>
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">Oyuncu Satış İlanı</div>
+                    <div style="font-size:10px; color:#94a3b8; line-height:1.4;">
+                        Yedek kulübenizdeki herhangi bir oyuncuyu global pazara koyarak diğer oyuncuların satın almasını sağlayabilirsiniz.
+                    </div>
+                    <div class="form-group" style="margin-top:8px;">
+                        <label>Satılacak Yedek Oyuncu:</label>
+                        <select class="select-custom" id="sell-bench-select" style="width:100%;"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fiyat ($):</label>
+                        <input type="number" class="form-input" id="sell-price-input" value="100">
+                    </div>
+                    <button class="btn btn-green" onclick="listPlayerToMarket()">Pazara İlan Ver</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB BTC SHOP -->
+        <div class="tab-content" id="tab-btcshop">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:12px; font-weight:bold; color:#f7931a;">₿ BTC Özel Oyuncu Mağazası</div>
+                </div>
+                <div class="market-grid" id="btc-shop-list"></div>
+            </div>
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">BTC Cüzdanı</div>
+                    <div style="font-size:10px; color:#cbd5e1; line-height:1.4;">
+                        Mevcut BTC: <b class="c-btc" id="btc-shop-bal">0.00 BTC</b><br><br>
+                        Admin panelinden eklenen süreli prime kartlar burada listelenir.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: OFFICE / CLUB MANAGEMENT -->
+        <div class="tab-content" id="tab-office">
+            <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
+                <div class="panel-title">🏢 Kulüp Tesisleri & Sponsorluk</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
+                        <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Antrenman Tesisleri (Lv. <span id="fac-lvl">1</span>)</div>
+                        <div style="font-size:10px; color:#94a3b8; margin:5px 0;">Maliyet: <span class="c-gold" id="fac-cost">$100</span></div>
+                        <button class="btn btn-green" onclick="upgradeFacility()">Geliştir</button>
+                    </div>
+                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
+                        <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Stadyum Kapasitesi (Lv. <span id="stad-lvl">1</span>)</div>
+                        <div style="font-size:10px; color:#94a3b8; margin:5px 0;">Maliyet: <span class="c-gold" id="stad-cost">$150</span></div>
+                        <button class="btn btn-blue" onclick="upgradeStadium()">Geliştir</button>
+                    </div>
+                </div>
+                <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
+                    <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Sponsor Geliri</div>
+                    <div class="form-group" style="margin-top:6px;">
+                        <label>Sponsor Seç:</label>
+                        <select class="select-custom" id="sponsor-select" onchange="changeSponsor(this.value)">
+                            <option value="tff">TFF Partneri ($35 / Maç)</option>
+                            <option value="turkishairlines">Turkish Airlines ($60 / Maç)</option>
+                            <option value="hepsiburada">Hepsiburada ($90 / Maç)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-gold" id="sponsor-btn" onclick="claimSponsorBonus()" style="margin-top:6px;">Sponsor Primini Topla ($0)</button>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">Finans</div>
+                    <div style="font-size:11px; color:#cbd5e1; display:flex; flex-direction:column; gap:5px;">
+                        <div>💰 Kasa: <span class="c-green" id="fin-coins">$300</span></div>
+                        <div>📊 Toplam Maç: <span id="fin-matches">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: STATS -->
+        <div class="tab-content" id="tab-stats">
+            <div class="panel" style="display:flex; flex-direction:column; gap:10px; grid-column:span 2;">
+                <div class="panel-title">📊 Oyuncu Performans & İstatistik Tablosu</div>
+                <div style="max-height: 380px; overflow-y: auto;">
+                    <table style="width:100%; border-collapse: collapse; font-size:11px; text-align:left;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #334155; color:#f59e0b;">
+                                <th style="padding:6px;">Oyuncu</th>
+                                <th>Mevki</th>
+                                <th>GEN</th>
+                                <th>Gol</th>
+                                <th>Asist</th>
+                                <th>Maç</th>
+                                <th>Ort. Puan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ONLINE ROOMS -->
+        <div class="tab-content" id="tab-online">
+            <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
+                <div class="panel-title">🌍 Online Maç Lobileri</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
+                        <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">Oda Kur</div>
+                        <button class="btn btn-green" onclick="createOnlineRoom()">+ Lobi Oluştur</button>
+                    </div>
+                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
+                        <div style="font-weight:bold; font-size:11px; color:#38bdf8; margin-bottom:6px;">Kod ile Katıl</div>
+                        <div style="display:flex; gap:4px;">
+                            <input type="text" class="form-input" id="room-code-input" placeholder="Oda Kodu" style="text-transform:uppercase;">
+                            <button class="btn btn-blue" style="width:auto;" onclick="joinOnlineRoom()">Bağlan</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Hazır)</div>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">Sunucu Bilgisi</div>
+                    <div style="font-size:10px; color:#94a3b8;">Tüm işlemler online sunucu ile senkronizedir.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB ADMIN PANEL -->
+        <div class="tab-content" id="tab-admin">
+            <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
+                <div class="panel-title">👑 Admin Yönetim Paneli (Gizli Şifre Aktif)</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #dc2626;">
+                        <div style="font-weight:bold; font-size:11px; color:#ef4444; margin-bottom:8px;">Bakiye Yükleme</div>
+                        <div class="form-group"><label>Coin:</label><input type="number" class="form-input" id="admin-add-coins" value="5000"></div>
+                        <button class="btn btn-green" onclick="adminAddCoins()">Coin Ekle</button>
+                        <hr style="border-color:#1e293b; margin:10px 0;">
+                        <div class="form-group"><label>BTC:</label><input type="number" step="0.1" class="form-input" id="admin-add-btc" value="2.0"></div>
+                        <button class="btn btn-btc" onclick="adminAddBTC()">BTC Ekle</button>
+                    </div>
+                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #dc2626;">
+                        <div style="font-weight:bold; font-size:11px; color:#ef4444; margin-bottom:8px;">BTC Shop'a Prime Oyuncu Ekle</div>
+                        <div class="form-group"><label>İsim:</label><input type="text" class="form-input" id="admin-btc-name" value="PRIME-Ronaldo"></div>
+                        <div class="form-group">
+                            <label>Pozisyon & GEN:</label>
+                            <div style="display:flex; gap:4px;">
+                                <select class="select-custom" id="admin-btc-pos"><option value="ST">ST</option><option value="CM">CM</option><option value="CB">CB</option><option value="GK">GK</option></select>
+                                <input type="number" class="form-input" id="admin-btc-ovr" value="99">
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Fiyat (BTC):</label><input type="number" step="0.1" class="form-input" id="admin-btc-price" value="0.5"></div>
+                        <button class="btn btn-gold" onclick="adminAddBTCPlayer()">BTC Shop'a Ekle</button>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">Yetki</div>
+                    <div style="font-size:10px; color:#10b981;">Gizli kombinasyon ile tam yönetici yetkisi sağlandı.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal-box">
+            <div class="modal-title">⚙️ Kulüp Ayarları</div>
+            <div class="form-group"><label>Menajer:</label><input type="text" class="form-input" id="input-manager" value="Murat"></div>
+            <div class="form-group"><label>Takım Adı:</label><input type="text" class="form-input" id="input-team" value="Ankara Gücü FC"></div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button class="btn btn-green" onclick="saveProfile()">Kaydet</button>
+                <button class="btn" style="background:#334155;" onclick="closeProfileModal()">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MATCH OVERLAY -->
+    <div class="match-overlay" id="match-overlay">
+        <div class="match-header">
+            <div><span style="color:#2563eb; font-weight:bold;" id="match-home-name">SİZİN TAKIM</span> vs <span style="color:#dc2626; font-weight:bold;" id="match-away-name">RAKİP</span></div>
+            <div class="score-board"><span id="match-home-score">0</span> - <span id="match-away-score">0</span></div>
+            <div style="color:#f59e0b; font-weight:bold;" id="match-timer">00:00</div>
+        </div>
+        <div class="pitch-container" id="match-pitch">
+            <div class="center-line"></div>
+            <div class="center-circle"></div>
+            <div class="ball-dot" id="match-ball"></div>
+        </div>
+        <div style="background:#0f172a; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#f59e0b; border:1px solid #1e293b; height:50px; display:flex; align-items:center;" id="match-live-comment">
+            > Online simülasyon başlatıldı...
+        </div>
+    </div>
+</div>
+
+<script>
+const PLAYERS_DATABASE = {
+    ST: [
+        { name: "murathan068", rating: 93 }, { name: "r7zvars", rating: 91 },
+        { name: "turkishkingvon", rating: 88 }, { name: "realaviyan", rating: 86 },
+        { name: "ranukic", rating: 86 }, { name: "axeetra", rating: 83 },
+        { name: "vvvaaacuuu", rating: 83 }, { name: "akliouchee", rating: 83 },
+        { name: "BergvaII", rating: 81 }, { name: "mustiq7bjk", rating: 81 },
+        { name: "huazrino", rating: 81 }, { name: "0everyx", rating: 81 },
+        { name: "Sokaachu", rating: 81 }, { name: "mugancy", rating: 80 },
+        { name: "cvroutis", rating: 80 }, { name: "Blamedragon35", rating: 80 },
+        { name: "Pxst3r", rating: 80 }, { name: "miitsuroo", rating: 80 },
+        { name: "Endreshixgo", rating: 79 }, { name: "dunkedbyfruzann", rating: 79 },
+        { name: "ugrunic", rating: 79 }, { name: "girisimcibey", rating: 77 },
+        { name: "liquesii", rating: 77 }, { name: "malemir827772", rating: 74 },
+        { name: "efeffefefefee0", rating: 73 }
+    ],
+    CM: [
+        { name: "xslazuri", rating: 89 }, { name: "koroshuffle", rating: 86 },
+        { name: "xaviessta", rating: 86 }, { name: "xrazyoy", rating: 86 },
+        { name: "ietsunaa", rating: 86 }, { name: "aw0ncy", rating: 86 },
+        { name: "ivejikara", rating: 85 }, { name: "0x_Ern", rating: 85 },
+        { name: "Ryoichizi", rating: 82 }, { name: "giorbelidzeg", rating: 82 },
+        { name: "EnderN27", rating: 81 }, { name: "bzmidd", rating: 81 },
+        { name: "17KxSlevy", rating: 80 }, { name: "mbavppe", rating: 80 },
+        { name: "d1marco", rating: 80 }, { name: "resasastitit", rating: 79 },
+        { name: "Narto_TR", rating: 79 }, { name: "lre2y", rating: 78 },
+        { name: "ndngEFEKAN1", rating: 77 }, { name: "ekdtron", rating: 75 },
+        { name: "HydraRp20", rating: 74 }, { name: "j4dova", rating: 73 },
+        { name: "iZephyne", rating: 73 }
+    ],
+    CB: [
+        { name: "savic571", rating: 89 }, { name: "ct3nth", rating: 86 },
+        { name: "mvlldini", rating: 85 }, { name: "ev4rn", rating: 84 },
+        { name: "costerani", rating: 84 }, { name: "mvnemen", rating: 83 },
+        { name: "zerlinh0", rating: 83 }, { name: "egefda", rating: 83 },
+        { name: "fvnedar", rating: 82 }, { name: "prom3s", rating: 81 },
+        { name: "Nigmatcon", rating: 81 }, { name: "qertyasdsa6", rating: 81 },
+        { name: "OnIyLerquin", rating: 81 }, { name: "y0fla", rating: 81 },
+        { name: "r1jkaard", rating: 80 }, { name: "MopixM", rating: 80 },
+        { name: "xzuryphain", rating: 80 }, { name: "sentesdr", rating: 80 },
+        { name: "WoweDoe", rating: 79 }, { name: "mehmetziii", rating: 79 },
+        { name: "esasa3434", rating: 78 }, { name: "b7tuus", rating: 78 },
+        { name: "ExclusiveZade", rating: 78 }, { name: "prwtaa", rating: 77 },
+        { name: "sshuritsa", rating: 76 }, { name: "ecemdsakjdh", rating: 75 },
+        { name: "Roufreen0", rating: 75 }, { name: "yavuzgk", rating: 74 },
+        { name: "bugatti_eron", rating: 74 }, { name: "Waspxq31", rating: 73 },
+        { name: "BRNTRHN2000", rating: 72 }, { name: "efmeguye1", rating: 70 }
+    ],
+    GK: [
+        { name: "armantinez", rating: 87 }, { name: "itachllas", rating: 86 },
+        { name: "vaaldeesss", rating: 86 }, { name: "angles721s", rating: 84 },
+        { name: "turhanyuu", rating: 84 }, { name: "aaIper", rating: 84 },
+        { name: "DunyaOyunTRDOT", rating: 82 }, { name: "papelforcesxd", rating: 82 },
+        { name: "AnonimRob33", rating: 80 }, { name: "aras9071", rating: 80 },
+        { name: "dons_everywhere", rating: 80 }, { name: "Bayinsan83", rating: 80 },
+        { name: "ruzgarruzgar56", rating: 77 }, { name: "BurakTR3000", rating: 76 },
+        { name: "SelimmKral1907", rating: 74 }, { name: "Neymar_Efe45Alt", rating: 73 },
+        { name: "tarzankemiren_1967", rating: 72 }
+    ]
+};
+
+let defaultGameState = {
+    coins: 300,
+    btc: 0.00,
+    wins: 0,
+    totalMatches: 0,
+    teamName: "Ankara Gücü FC",
+    managerName: "Murat",
+    formation: "4-1-1",
+    tactics: "balanced",
+    squad: {},
+    bench: [
+        { name: "murathan068", rating: 93, pos: "ST" },
+        { name: "xslazuri", rating: 89, pos: "CM" },
+        { name: "savic571", rating: 89, pos: "CB" }
+    ],
+    marketListings: [
+        { id: 1, name: "armantinez", pos: "GK", rating: 87, price: 130, seller: "Sistem" }
+    ],
+    btcShopListings: [],
+    facilityLevel: 1,
+    stadiumLevel: 1,
+    sponsor: "tff",
+    sponsorBonusAcc: 0,
+    playerStats: {}, 
+    adminSequence: []
+};
+
+let gameState = JSON.parse(JSON.stringify(defaultGameState));
+
+function saveGame() {
+    localStorage.setItem("tff_draft_save_v3", JSON.stringify(gameState));
+}
+
+function loadGame() {
+    const saved = localStorage.getItem("tff_draft_save_v3");
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            gameState = { ...defaultGameState, ...parsed };
+        } catch (e) {
+            console.error("Kayıt yüklenemedi:", e);
+        }
+    }
+}
+
+function resetSaveData() {
+    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve varsayılan ayarlara dönülecek. Emin misiniz?")) {
+        localStorage.removeItem("tff_draft_save_v3");
+        gameState = JSON.parse(JSON.stringify(defaultGameState));
+        initApp();
+        alert("Oyun tamamen sıfırlandı ve tüm buglar temizlendi!");
+    }
+}
+
+window.onload = function() {
+    loadGame();
+    initApp();
+};
+
+function initApp() {
+    document.getElementById("formation-select").value = gameState.formation;
+    document.getElementById("tactics-select").value = gameState.tactics;
+    document.getElementById("sponsor-select").value = gameState.sponsor;
+    
+    renderFormationSlots();
+    renderMarketUI();
+    renderBTCShopUI();
+    updateBenchUI();
+    updateUI();
+    renderStatsTable();
+    logConsole("Sistem başarıyla yüklendi. Sahalar aktif.");
+}
+
+function getRarity(rating) {
+    if (rating >= 90) return "Prime";
+    if (rating >= 85) return "Legendary";
+    if (rating >= 80) return "Epic";
+    if (rating >= 75) return "Rare";
+    return "Common";
+}
+
+function changeFormation(val) {
+    gameState.formation = val;
+    saveGame();
+    renderFormationSlots();
+    updateUI();
+}
+
+function changeTactics(val) {
+    gameState.tactics = val;
+    saveGame();
+    logConsole("Taktik güncellendi: " + val.toUpperCase());
+}
+
+function renderFormationSlots() {
+    const container = document.getElementById("formation-slots-container");
+    if (!container) return;
+    container.innerHTML = "";
+    
+    const parts = gameState.formation.split("-").map(Number);
+    const defCount = parts[0], cmCount = parts[1], stCount = parts[2];
+
+    const rows = [
+        { pos: "ST", count: stCount },
+        { pos: "CM", count: cmCount },
+        { pos: "CB", count: defCount },
+        { pos: "GK", count: 1 }
+    ];
+
+    rows.forEach(row => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "pitch-row";
+        for (let i = 0; i < row.count; i++) {
+            const slotKey = `${row.pos}_${i}`;
+            const player = gameState.squad[slotKey];
+            const slotEl = document.createElement("div");
+            slotEl.className = "slot";
+            slotEl.dataset.slotKey = slotKey;
+            slotEl.dataset.pos = row.pos;
+
+            if (player) {
+                const rarity = getRarity(player.rating);
+                slotEl.classList.add("filled", `r-${rarity}`);
+                slotEl.innerHTML = `
+                    <div class="card-pos">${row.pos}</div>
+                    <div class="card-ovr">${player.rating}</div>
+                    <div class="card-name">${player.name}</div>
+                    ${rarity === 'Prime' ? '<div class="prime-badge">PRIME</div>' : ''}
+                `;
+            } else {
+                slotEl.innerHTML = `<span style="color:#64748b; font-weight:bold;">${row.pos}</span>`;
+            }
+
+            slotEl.ondragover = (e) => { e.preventDefault(); slotEl.classList.add("drag-over"); };
+            slotEl.ondragleave = () => slotEl.classList.remove("drag-over");
+            slotEl.ondrop = (e) => {
+                e.preventDefault();
+                slotEl.classList.remove("drag-over");
+                const benchIdx = e.dataTransfer.getData("text/plain");
+                assignBenchPlayerToSlot(benchIdx, slotKey, row.pos);
+            };
+
+            rowDiv.appendChild(slotEl);
+        }
+        container.appendChild(rowDiv);
+    });
+}
+
+function updateBenchUI() {
+    const list = document.getElementById("inv-list");
+    const selectSell = document.getElementById("sell-bench-select");
+    if (!list || !selectSell) return;
+    
+    list.innerHTML = "";
+    selectSell.innerHTML = "";
+
+    if (!gameState.bench || !Array.isArray(gameState.bench)) {
+        gameState.bench = [];
+    }
+
+    gameState.bench.forEach((player, idx) => {
+        const rarity = getRarity(player.rating);
+        
+        const item = document.createElement("div");
+        item.className = "inv-item";
+        item.draggable = true;
+        item.ondragstart = (e) => e.dataTransfer.setData("text/plain", idx);
+        
+        item.innerHTML = `
+            <div>
+                <b>${player.name}</b> (${player.pos} - GEN: ${player.rating}) ${rarity === 'Prime' ? '<span class="c-prime">⭐PRIME</span>' : ''}
+            </div>
+            <button style="background:#dc2626; color:#fff; border:none; padding:2px 6px; border-radius:4px; font-size:9px; cursor:pointer;" onclick="discardBenchPlayer(${idx})">Sil</button>
+        `;
+        list.appendChild(item);
+
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.innerText = `${player.name} (${player.pos} - ${player.rating})`;
+        selectSell.appendChild(opt);
+    });
+}
+
+function assignBenchPlayerToSlot(benchIdx, slotKey, expectedPos) {
+    const player = gameState.bench[benchIdx];
+    if (!player) return;
+
+    if (player.pos !== expectedPos) {
+        alert(`Uyarı: Bu oyuncu ${player.pos}, bu pozisyon ise ${expectedPos}!`);
+    }
+
+    gameState.bench.splice(benchIdx, 1);
+    if (gameState.squad[slotKey]) {
+        gameState.bench.push(gameState.squad[slotKey]);
+    }
+    gameState.squad[slotKey] = player;
+
+    saveGame();
+    logConsole(`${player.name} sahaya yerleştirildi.`);
+    renderFormationSlots();
+    updateBenchUI();
+    updateUI();
+}
+
+function discardBenchPlayer(idx) {
+    const removed = gameState.bench.splice(idx, 1)[0];
+    saveGame();
+    logConsole(`${removed.name} kulüpten gönderildi.`);
+    updateBenchUI();
+}
+
+function openPack(type) {
+    const cost = type === "bronze" ? 30 : 80;
+    if (gameState.coins < cost) { alert("Yetersiz Bakiye!"); return; }
+    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
+
+    gameState.coins -= cost;
+    const positions = ["ST", "CM", "CB", "GK"];
+    const pos = positions[Math.floor(Math.random() * positions.length)];
+    const pool = PLAYERS_DATABASE[pos];
+    let drawn = pool[Math.floor(Math.random() * pool.length)];
+
+    if (type === "gold" && drawn.rating < 80) {
+        drawn = pool.find(p => p.rating >= 80) || drawn;
+    }
+
+    const playerCard = { name: drawn.name, rating: drawn.rating, pos: pos };
+    gameState.bench.push(playerCard);
+
+    saveGame();
+    logConsole(`Paket Açıldı: ${playerCard.name} (${playerCard.pos} - ${playerCard.rating}) kadroya katıldı!`);
+    updateBenchUI();
+    updateUI();
+}
+
+function fuseDuplicates() {
+    let fused = 0;
+    for (let i = 0; i < gameState.bench.length; i++) {
+        for (let j = i + 1; j < gameState.bench.length; j++) {
+            if (gameState.bench[i].name === gameState.bench[j].name) {
+                gameState.bench[i].rating += 1;
+                gameState.bench.splice(j, 1);
+                fused++;
+            }
+        }
+    }
+    if (fused > 0) {
+        saveGame();
+        logConsole(`${fused} oyuncu birleştirildi (+1 GEN bonus).`);
+        updateBenchUI();
+        updateUI();
+    } else {
+        alert("Birleştirilecek kopya oyuncu bulunamadı.");
+    }
+}
+
+function calculateTeamOVR() {
+    let total = 0, count = 0;
+    Object.values(gameState.squad).forEach(p => {
+        if (p) { total += p.rating; count++; }
+    });
+    return count > 0 ? Math.round(total / count) : 60;
+}
+
+function startMatch() {
+    const userOvr = calculateTeamOVR();
+    const overlay = document.getElementById("match-overlay");
+    const pitch = document.getElementById("match-pitch");
+    
+    document.getElementById("match-home-name").innerText = gameState.teamName.toUpperCase();
+    document.getElementById("match-away-name").innerText = "ONLINE RAKİP";
+    document.getElementById("match-home-score").innerText = "0";
+    document.getElementById("match-away-score").innerText = "0";
+    
+    pitch.querySelectorAll(".player-dot").forEach(e => e.remove());
+
+    const homeDots = [];
+    const awayDots = [];
+    for (let i = 0; i < 6; i++) {
+        const h = document.createElement("div"); h.className = "player-dot team-home"; h.innerText = "S"; pitch.appendChild(h); homeDots.push(h);
+        const a = document.createElement("div"); a.className = "player-dot team-away"; a.innerText = "R"; pitch.appendChild(a); awayDots.push(a);
+    }
+
+    const ball = document.getElementById("match-ball");
+    overlay.style.display = "flex";
+
+    let homeScore = 0, awayScore = 0, minute = 0;
+    const opponentOvr = Math.floor(userOvr + (Math.random() * 8 - 4));
+
+    const matchInterval = setInterval(() => {
+        minute += 3;
+        document.getElementById("match-timer").innerText = `${minute < 10 ? '0'+minute : minute}:00`;
+
+        homeDots.forEach(d => { d.style.left = Math.floor(Math.random() * 40 + 5) + "%"; d.style.top = Math.floor(Math.random() * 80 + 10) + "%"; });
+        awayDots.forEach(d => { d.style.left = Math.floor(Math.random() * 40 + 55) + "%"; d.style.top = Math.floor(Math.random() * 80 + 10) + "%"; });
+        ball.style.left = Math.floor(Math.random() * 80 + 10) + "%";
+        ball.style.top = Math.floor(Math.random() * 80 + 10) + "%";
+
+        if (Math.random() < 0.2) {
+            if (Math.random() * (userOvr + opponentOvr) < userOvr) {
+                homeScore++;
+                document.getElementById("match-home-score").innerText = homeScore;
+                recordMatchStats(true);
+                document.getElementById("match-live-comment").innerText = `> GOOOL! Takımımız muhteşem bir gol attı!`;
+            } else {
+                awayScore++;
+                document.getElementById("match-away-score").innerText = awayScore;
+                recordMatchStats(false);
+                document.getElementById("match-live-comment").innerText = `> GOL! Rakip online oyuncu skoru değiştirdi.`;
+            }
+        }
+
+        if (minute >= 90) {
+            clearInterval(matchInterval);
+            setTimeout(() => {
+                overlay.style.display = "none";
+                finishMatch(homeScore, awayScore);
+            }, 1200);
+        }
+    }, 200);
+}
+
+function recordMatchStats(isHomeGoal) {
+    const squadPlayers = Object.values(gameState.squad).filter(p => p !== null);
+    if (squadPlayers.length === 0) return;
+
+    const scorer = squadPlayers[Math.floor(Math.random() * squadPlayers.length)];
+    if (!gameState.playerStats[scorer.name]) {
+        gameState.playerStats[scorer.name] = { name: scorer.name, pos: scorer.pos, rating: scorer.rating, goals: 0, assists: 0, matches: 0, ratingSum: 0 };
+    }
+    if (isHomeGoal) gameState.playerStats[scorer.name].goals++;
+}
+
+function finishMatch(home, away) {
+    gameState.totalMatches++;
+    let reward = 30 + (gameState.stadiumLevel * 10);
+
+    Object.values(gameState.squad).forEach(p => {
+        if (p) {
+            if (!gameState.playerStats[p.name]) {
+                gameState.playerStats[p.name] = { name: p.name, pos: p.pos, rating: p.rating, goals: 0, assists: 0, matches: 0, ratingSum: 0 };
+            }
+            gameState.playerStats[p.name].matches++;
+            gameState.playerStats[p.name].ratingSum += (Math.random() * 2 + 7.5);
+        }
+    });
+
+    if (home > away) {
+        gameState.wins++;
+        reward += 60;
+        alert(`TEBRİKLER! Maçı ${home}-${away} kazandınız. Ödül: $${reward}`);
+    } else if (home === away) {
+        reward += 25;
+        alert(`BERABERE! Maç ${home}-${away} bitti. Ödül: $${reward}`);
+    } else {
+        alert(`MAĞLUBİYET! Maç ${home}-${away} bitti. Ödül: $${reward}`);
+    }
+
+    gameState.coins += reward;
+    saveGame();
+    updateUI();
+    renderStatsTable();
+}
+
+function renderStatsTable() {
+    const tbody = document.getElementById("stats-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    Object.values(gameState.playerStats).forEach(st => {
+        const avgRating = st.matches > 0 ? (st.ratingSum / st.matches).toFixed(1) : "8.2";
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #1e293b";
+        tr.innerHTML = `
+            <td style="padding:6px; font-weight:bold; color:#f59e0b;">${st.name}</td>
+            <td>${st.pos}</td>
+            <td>${st.rating}</td>
+            <td style="color:#10b981; font-weight:bold;">${st.goals}</td>
+            <td style="color:#38bdf8;">${st.assists || 0}</td>
+            <td>${st.matches}</td>
+            <td>${avgRating}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderMarketUI() {
+    const list = document.getElementById("market-list");
+    if (!list) return;
+    list.innerHTML = "";
+    gameState.marketListings.forEach((item, idx) => {
+        const card = document.createElement("div");
+        card.className = "market-card";
+        card.innerHTML = `
+            <div style="font-weight:bold; font-size:11px; color:#f59e0b;">${item.name}</div>
+            <div style="font-size:10px; color:#94a3b8;">${item.pos} | GEN: ${item.rating}</div>
+            <div style="font-size:9px; color:#38bdf8;">Satıcı: ${item.seller}</div>
+            <div style="font-weight:900; color:#10b981; font-size:12px;">$${item.price}</div>
+            <button class="btn btn-green" style="padding:4px; font-size:10px;" onclick="buyMarketPlayer(${idx})">Satın Al</button>
+        `;
+        list.appendChild(card);
+    });
+}
+
+function listPlayerToMarket() {
+    const select = document.getElementById("sell-bench-select");
+    const benchIdx = select.value;
+    const price = parseInt(document.getElementById("sell-price-input").value);
+
+    if (benchIdx === "" || isNaN(price) || price <= 0) {
+        alert("Lütfen geçerli bir oyuncu ve fiyat seçin!");
+        return;
+    }
+
+    const player = gameState.bench.splice(benchIdx, 1)[0];
+    gameState.marketListings.push({
+        id: Date.now(),
+        name: player.name,
+        pos: player.pos,
+        rating: player.rating,
+        price: price,
+        seller: gameState.teamName
+    });
+
+    saveGame();
+    logConsole(`${player.name} $${price} fiyatla global pazara eklendi.`);
+    updateBenchUI();
+    renderMarketUI();
+    alert("Oyuncu online pazara başarıyla yüklendi!");
+}
+
+function buyMarketPlayer(idx) {
+    const item = gameState.marketListings[idx];
+    if (gameState.coins < item.price) { alert("Yetersiz Coin!"); return; }
+    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
+
+    gameState.coins -= item.price;
+    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos });
+    gameState.marketListings.splice(idx, 1);
+
+    saveGame();
+    logConsole(`${item.name} pazardan satın alındı.`);
+    renderMarketUI();
+    updateBenchUI();
+    updateUI();
+}
+
+function refreshMarket() {
+    if (gameState.coins < 15) { alert("Yenilemek için $15 gerekiyor!"); return; }
+    gameState.coins -= 15;
+    saveGame();
+    updateUI();
+    alert("Pazar güncellendi!");
+}
+
+function upgradeFacility() {
+    const cost = gameState.facilityLevel * 100;
+    if (gameState.coins < cost) { alert("Yetersiz Bakiye!"); return; }
+    gameState.coins -= cost;
+    gameState.facilityLevel++;
+    saveGame();
+    updateUI();
+}
+
+function upgradeStadium() {
+    const cost = gameState.stadiumLevel * 150;
+    if (gameState.coins < cost) { alert("Yetersiz Bakiye!"); return; }
+    gameState.coins -= cost;
+    gameState.stadiumLevel++;
+    saveGame();
+    updateUI();
+}
+
+function changeSponsor(val) { 
+    gameState.sponsor = val; 
+    saveGame();
+    updateUI(); 
+}
+
+function claimSponsorBonus() {
+    let bonus = gameState.totalMatches * (gameState.sponsor === "tff" ? 35 : gameState.sponsor === "turkishairlines" ? 60 : 90);
+    gameState.coins += bonus;
+    alert(`Sponsor primi toplandı: $${bonus}`);
+    gameState.totalMatches = 0;
+    saveGame();
+    updateUI();
+}
+
+function handleSecretClick(type) {
+    gameState.adminSequence.push(type);
+    if (gameState.adminSequence.length > 5) gameState.adminSequence.shift();
+
+    if (gameState.adminSequence.join(",") === "coin,coin,btc,btc,coin") {
+        document.getElementById("admin-nav-tab").style.display = "block";
+        alert("👑 5-2-3 GİZLİ KOMBİNASYONU BAŞARILI! Admin Paneli kilidi açıldı.");
+        logConsole("HİLE AKTİF: Admin yetkileri sağlandı.");
+    }
+}
+
+function adminAddCoins() {
+    const val = parseInt(document.getElementById("admin-add-coins").value) || 0;
+    gameState.coins += val;
+    saveGame();
+    updateUI();
+}
+
+function adminAddBTC() {
+    const val = parseFloat(document.getElementById("admin-add-btc").value) || 0;
+    gameState.btc += val;
+    saveGame();
+    updateUI();
+}
+
+function adminAddBTCPlayer() {
+    const name = document.getElementById("admin-btc-name").value;
+    const pos = document.getElementById("admin-btc-pos").value;
+    const ovr = parseInt(document.getElementById("admin-btc-ovr").value);
+    const price = parseFloat(document.getElementById("admin-btc-price").value);
+
+    gameState.btcShopListings.push({ name, pos, rating: ovr, price });
+    saveGame();
+    renderBTCShopUI();
+    alert(`${name} BTC Shop'a eklendi!`);
+}
+
+function renderBTCShopUI() {
+    const list = document.getElementById("btc-shop-list");
+    if (!list) return;
+    list.innerHTML = "";
+    gameState.btcShopListings.forEach((item, idx) => {
+        const card = document.createElement("div");
+        card.className = "market-card";
+        card.style.borderColor = "#f7931a";
+        card.innerHTML = `
+            <div style="font-weight:bold; font-size:11px; color:#f7931a;">${item.name}</div>
+            <div style="font-size:10px; color:#94a3b8;">${item.pos} | GEN: ${item.rating}</div>
+            <div style="font-weight:900; color:#f7931a; font-size:12px;">${item.price} ₿</div>
+            <button class="btn btn-btc" style="padding:4px; font-size:10px;" onclick="buyBTCPlayer(${idx})">Satın Al</button>
+        `;
+        list.appendChild(card);
+    });
+}
+
+function buyBTCPlayer(idx) {
+    const item = gameState.btcShopListings[idx];
+    if (gameState.btc < item.price) { alert("Yetersiz BTC!"); return; }
+    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
+
+    gameState.btc -= item.price;
+    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos });
+    gameState.btcShopListings.splice(idx, 1);
+
+    saveGame();
+    renderBTCShopUI();
+    updateBenchUI();
+    updateUI();
+}
+
+function createOnlineRoom() {
+    const code = "TFF-" + Math.floor(1000 + Math.random() * 9000);
+    const statusEl = document.getElementById("online-room-status");
+    statusEl.innerText = `Oda Kuruluyor...`;
+    
+    setTimeout(() => {
+        statusEl.innerText = `Lobi Aktif! Oda Kodu: ${code} (Rakip Bekleniyor...)`;
+        logConsole(`Online oda kuruldu: ${code}`);
+    }, 600);
+}
+
+function joinOnlineRoom() {
+    const code = document.getElementById("room-code-input").value.trim().toUpperCase();
+    const statusEl = document.getElementById("online-room-status");
+    
+    if (!code) { 
+        alert("Lütfen geçerli bir oda kodu girin!"); 
+        return; 
+    }
+    
+    statusEl.innerText = `${code} odasına bağlanılıyor...`;
+    
+    setTimeout(() => {
+        statusEl.innerText = `Başarıyla Bağlanıldı: ${code} (Maça Hazır)`;
+        logConsole(`Odaya başarıyla bağlanıldı: ${code}`);
+        alert(`"${code}" odasındaki rakiple eşleştiniz! Maça başlayabilirsiniz.`);
+    }, 800);
+}
+
+function switchTab(tabId, el) {
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    document.getElementById(`tab-${tabId}`).classList.add("active");
+    if (el) el.classList.add("active");
+}
+
+function updateUI() {
+    document.getElementById("ui-coins").innerText = `$${gameState.coins}`;
+    document.getElementById("ui-btc").innerText = `${gameState.btc.toFixed(2)} ₿`;
+    document.getElementById("ui-wins").innerText = gameState.wins;
+    document.getElementById("ui-ovr").innerText = calculateTeamOVR();
+    document.getElementById("ui-team-name").innerText = gameState.teamName;
+    document.getElementById("ui-manager-name").innerText = gameState.managerName;
+    document.getElementById("fac-lvl").innerText = gameState.facilityLevel;
+    document.getElementById("fac-cost").innerText = `$${gameState.facilityLevel * 100}`;
+    document.getElementById("stad-lvl").innerText = gameState.stadiumLevel;
+    document.getElementById("stad-cost").innerText = `$${gameState.stadiumLevel * 150}`;
+    document.getElementById("fin-coins").innerText = `$${gameState.coins}`;
+    document.getElementById("fin-matches").innerText = gameState.totalMatches;
+    document.getElementById("btc-shop-bal").innerText = `${gameState.btc.toFixed(2)} BTC`;
+}
+
+function openProfileModal() { document.getElementById("profile-modal").style.display = "flex"; }
+function closeProfileModal() { document.getElementById("profile-modal").style.display = "none"; }
+function saveProfile() {
+    gameState.managerName = document.getElementById("input-manager").value;
+    gameState.teamName = document.getElementById("input-team").value;
+    saveGame();
+    closeProfileModal();
+    updateUI();
+}
+
+function logConsole(msg) {
+    const c = document.getElementById("console-log");
+    if (!c) return;
+    c.innerHTML += `<div>> ${msg}</div>`;
+    c.scrollTop = c.scrollHeight;
+}
+</script>
+</body>
+</html>
