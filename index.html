@@ -599,7 +599,6 @@ function getRarity(rating) {
 }
 
 function changeFormation(val) {
-    // Pozisyon değişiminde oyuncu kaybolma bug'ı düzeltildi: Kadrodakiler yedeklere atılır
     Object.values(gameState.squad).forEach(p => {
         if (p) gameState.bench.push(p);
     });
@@ -791,7 +790,7 @@ function calculateTeamOVR() {
 
 function isSquadFull() {
     const parts = gameState.formation.split("-").map(Number);
-    const totalSlots = parts[0] + parts[1] + parts[2] + 1; // Def + Ort + Forv + GK
+    const totalSlots = parts[0] + parts[1] + parts[2] + 1;
     const filledCount = Object.values(gameState.squad).filter(p => p !== null && p !== undefined).length;
     return filledCount >= totalSlots;
 }
@@ -930,7 +929,6 @@ function renderMarketUI() {
     playerList.innerHTML = "";
     systemList.innerHTML = "";
 
-    // 1. Kullanıcı İlanları Pazarı
     gameState.marketListings.forEach((item, idx) => {
         const card = document.createElement("div");
         card.className = "market-card";
@@ -947,7 +945,6 @@ function renderMarketUI() {
         playerList.innerHTML = `<div style="font-size:10px; color:#64748b; grid-column:span 2;">Henüz diğer oyuncular tarafından ilan verilmedi.</div>`;
     }
 
-    // 2. Resmi Sistem Pazarı
     gameState.systemListings.forEach((item, idx) => {
         const card = document.createElement("div");
         card.className = "market-card";
