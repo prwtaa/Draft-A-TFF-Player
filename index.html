@@ -677,7 +677,7 @@ function initApp() {
 }
 
 function getRarity(rating) {
-    if (rating >= 90) return "Prime";
+    if (rating >= 90) return "Mythic";
     if (rating >= 85) return "Legendary";
     if (rating >= 80) return "Epic";
     if (rating >= 75) return "Rare";
@@ -1294,17 +1294,39 @@ function buyBTCPlayer(idx) {
     updateUI();
 }
 
-// GERÇEK P2P ODA OLUŞTURMA
-function createOnlineRoom() {
+// GERÇEK P2P ODAYA BAĞLANMA (TAM ID DESTEKLİ)
+function joinOnlineRoom() {
+    let inputVal = document.getElementById("room-code-input").value.trim();
     const statusEl = document.getElementById("online-room-status");
-    if (!myPeerId) {
-        alert("Sunucuya henüz bağlanılamadı, lütfen birkaç saniye bekleyip tekrar deneyin.");
-        return;
+    
+    if (!inputVal) { 
+        alert("Lütfen bağlanılacak Peer ID'yi girin!"); 
+        return; 
     }
-    const shortCode = "TFF-" + myPeerId.slice(-4).toUpperCase();
-    statusEl.innerText = `Oda Aktif! Kodunuz: ${shortCode} (Rakip Bekleniyor...)`;
-    logConsole(`Online oda oluşturuldu. Kod: ${shortCode}`);
-    alert(`Odanız başarıyla kuruldu!\nOda Kodunuz: ${shortCode}\nBu kodu arkadaşınıza verin.`);
+    
+    // Eğer kullanıcı "TFF-XXXX" formatında girerse son haneyi al, yoksa direkt tam ID olarak kabul et
+    if (inputVal.toUpperCase().includes("TFF-")) {
+        const targetSuffix = inputVal.replace("TFF-", "").toLowerCase();
+        inputVal = peer.id.substring(0, peer.id.length - 4) + targetSuffix;
+    }
+    
+    statusEl.innerText = `Bağlanılıyor...`;
+    logConsole(`Hedef ID'ye bağlantı deneniyor...`);
+
+    conn = peer.connect(inputVal);
+    
+    conn.on('open', () => {
+        statusEl.innerText = `Bağlantı Kuruldu!`;
+        logConsole(`Başarıyla karşı tarafa bağlandınız.`);
+        alert(`Odaya başarıyla bağlandınız! İki cihaz eşleşti.`);
+        setupConnectionEvents();
+    });
+
+    conn.on('error', (err) => {
+        console.error(err);
+        alert("Odaya bağlanılamadı! Girilen ID'nin doğru ve karşı tarafın aktif olduğundan emin olun.");
+        statusEl.innerText = "Bağlantı başarısız oldu.";
+    });
 }
 
 // GERÇEK P2P ODAYA BAĞLANMA
