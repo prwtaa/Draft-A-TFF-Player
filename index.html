@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.5</title>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v6.6</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -83,7 +83,7 @@
         .console { background: #030508; height: 85px; border-radius: 6px; padding: 6px; font-family: monospace; font-size: 10px; color: #f59e0b; overflow-y: auto; border: 1px solid #1e293b; }
 
         /* MARKET & OTHER TABS VIEW */
-        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 400px; overflow-y: auto; padding: 4px; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 340px; overflow-y: auto; padding: 4px; }
         .market-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; gap: 5px; }
 
         /* Modals */
@@ -172,7 +172,7 @@
                 </div>
 
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-gold" style="font-size: 12px; padding: 12px;" onclick="startMatch()">⚽ ONLINE / 2D MAÇI BAŞLAT</button>
+                    <button class="btn btn-gold" style="font-size: 12px; padding: 12px;" onclick="startMatch()">⚽ ONLINE / 2D MAÇI BAŞLAT (KADRO FULL OLMALI)</button>
                 </div>
             </div>
 
@@ -209,11 +209,11 @@
         <!-- TAB 2: TRANSFER MARKET -->
         <div class="tab-content" id="tab-market">
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:12px; font-weight:bold; color:#f59e0b;">🌍 Global Online Transfer Pazarı</div>
-                    <button class="btn btn-blue" style="width:auto; padding:4px 8px; font-size:10px;" onclick="refreshMarket()">Pazarı Yenile ($15)</button>
-                </div>
-                <div class="market-grid" id="market-list"></div>
+                <div style="font-size:12px; font-weight:bold; color:#f59e0b;">🌐 1. Oyuncu İlanları Pazarı (Kullanıcı Satışları)</div>
+                <div class="market-grid" id="player-market-list"></div>
+                
+                <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-top:10px;">🏛️ 2. Resmi Sistem Pazarı (Bot / Kulüp Satışları)</div>
+                <div class="market-grid" id="system-market-list"></div>
             </div>
             <div class="sidebar">
                 <div class="panel">
@@ -238,7 +238,7 @@
         <div class="tab-content" id="tab-btcshop">
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:12px; font-weight:bold; color:#f7931a;">₿ BTC Özel Oyuncu Mağazası</div>
+                    <div style="font-size:12px; font-weight:bold; color:#f7931a;" id="btc-shop-event-title">₿ BTC Özel Oyuncu Mağazası</div>
                 </div>
                 <div class="market-grid" id="btc-shop-list"></div>
             </div>
@@ -320,7 +320,7 @@
         <!-- TAB 5: ONLINE ROOMS -->
         <div class="tab-content" id="tab-online">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
-                <div class="panel-title">🌍 Online Maç Lobileri</div>
+                <div class="panel-title">🌍 Online Maç Lobileri (Fix)</div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
                         <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">Oda Kur</div>
@@ -335,13 +335,13 @@
                     </div>
                 </div>
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Hazır)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Senkronize)</div>
                 </div>
             </div>
             <div class="sidebar">
                 <div class="panel">
                     <div class="panel-title">Sunucu Bilgisi</div>
-                    <div style="font-size:10px; color:#94a3b8;">Tüm işlemler online sunucu ile senkronizedir.</div>
+                    <div style="font-size:10px; color:#94a3b8;">Lobi ve maç verileri eşleme protokolüyle sabitlendi.</div>
                 </div>
             </div>
         </div>
@@ -360,7 +360,13 @@
                         <button class="btn btn-btc" onclick="adminAddBTC()">BTC Ekle</button>
                     </div>
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #dc2626;">
-                        <div style="font-weight:bold; font-size:11px; color:#ef4444; margin-bottom:8px;">BTC Shop'a Prime Oyuncu Ekle</div>
+                        <div style="font-weight:bold; font-size:11px; color:#ef4444; margin-bottom:8px;">BTC Event & Shop Yönetimi</div>
+                        <div class="form-group"><label>Event Adı:</label><input type="text" class="form-input" id="admin-event-name" value="⚡ Summer Prime Event"></div>
+                        <div class="form-group"><label>Event Durumu:</label>
+                            <select class="select-custom" id="admin-event-status"><option value="active">Aktif (Eventli)</option><option value="inactive">Pasif (Eventsiz)</option></select>
+                        </div>
+                        <button class="btn btn-blue" onclick="adminSaveEventSettings()">Event Ayarla</button>
+                        <hr style="border-color:#1e293b; margin:8px 0;">
                         <div class="form-group"><label>İsim:</label><input type="text" class="form-input" id="admin-btc-name" value="PRIME-Ronaldo"></div>
                         <div class="form-group">
                             <label>Pozisyon & GEN:</label>
@@ -487,15 +493,15 @@ let defaultGameState = {
     formation: "4-1-1",
     tactics: "balanced",
     squad: {},
-    bench: [
-        { name: "murathan068", rating: 93, pos: "ST" },
-        { name: "xslazuri", rating: 89, pos: "CM" },
-        { name: "savic571", rating: 89, pos: "CB" }
-    ],
-    marketListings: [
-        { id: 1, name: "armantinez", pos: "GK", rating: 87, price: 130, seller: "Sistem" }
+    bench: [],
+    marketListings: [],
+    systemListings: [
+        { id: 999, name: "armantinez", pos: "GK", rating: 87, price: 130, seller: "Sistem Kulübü" },
+        { id: 998, name: "prwtaa", pos: "CB", rating: 77, price: 50, seller: "Sistem Kulübü" }
     ],
     btcShopListings: [],
+    btcEventName: "⚡ Standart BTC Etkinliği",
+    btcEventActive: true,
     facilityLevel: 1,
     stadiumLevel: 1,
     sponsor: "tff",
@@ -506,28 +512,58 @@ let defaultGameState = {
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
 
+function generateUnder75Squad() {
+    gameState.squad = {};
+    const parts = gameState.formation.split("-").map(Number);
+    const defCount = parts[0], cmCount = parts[1], stCount = parts[2];
+    const rows = [
+        { pos: "ST", count: stCount },
+        { pos: "CM", count: cmCount },
+        { pos: "CB", count: defCount },
+        { pos: "GK", count: 1 }
+    ];
+
+    rows.forEach(row => {
+        const pool = PLAYERS_DATABASE[row.pos].filter(p => p.rating < 75);
+        for (let i = 0; i < row.count; i++) {
+            const slotKey = `${row.pos}_${i}`;
+            if (pool.length > 0) {
+                const randPlayer = pool[Math.floor(Math.random() * pool.length)];
+                gameState.squad[slotKey] = { name: randPlayer.name, rating: randPlayer.rating, pos: row.pos };
+            }
+        }
+    });
+}
+
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v3", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v4", JSON.stringify(gameState));
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v3");
+    const saved = localStorage.getItem("tff_draft_save_v4");
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
             gameState = { ...defaultGameState, ...parsed };
+            if (!gameState.squad || Object.keys(gameState.squad).length === 0) {
+                generateUnder75Squad();
+            }
         } catch (e) {
             console.error("Kayıt yüklenemedi:", e);
+            generateUnder75Squad();
         }
+    } else {
+        generateUnder75Squad();
     }
 }
 
 function resetSaveData() {
-    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve varsayılan ayarlara dönülecek. Emin misiniz?")) {
-        localStorage.removeItem("tff_draft_save_v3");
+    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve 75 altı yeni başlangıç kadrosu verilecek. Emin misiniz?")) {
+        localStorage.removeItem("tff_draft_save_v4");
         gameState = JSON.parse(JSON.stringify(defaultGameState));
+        generateUnder75Squad();
         initApp();
-        alert("Oyun tamamen sıfırlandı ve tüm buglar temizlendi!");
+        alert("Oyun tamamen sıfırlandı ve başlangıç kadrosu yüklendi!");
     }
 }
 
@@ -540,6 +576,10 @@ function initApp() {
     document.getElementById("formation-select").value = gameState.formation;
     document.getElementById("tactics-select").value = gameState.tactics;
     document.getElementById("sponsor-select").value = gameState.sponsor;
+    if(document.getElementById("admin-event-name")) {
+        document.getElementById("admin-event-name").value = gameState.btcEventName;
+        document.getElementById("admin-event-status").value = gameState.btcEventActive ? "active" : "inactive";
+    }
     
     renderFormationSlots();
     renderMarketUI();
@@ -559,10 +599,18 @@ function getRarity(rating) {
 }
 
 function changeFormation(val) {
+    // Pozisyon değişiminde oyuncu kaybolma bug'ı düzeltildi: Kadrodakiler yedeklere atılır
+    Object.values(gameState.squad).forEach(p => {
+        if (p) gameState.bench.push(p);
+    });
+    gameState.squad = {};
     gameState.formation = val;
+    generateUnder75Squad();
     saveGame();
     renderFormationSlots();
+    updateBenchUI();
     updateUI();
+    logConsole("Diziliş değiştirildi, kadro güncellendi.");
 }
 
 function changeTactics(val) {
@@ -741,7 +789,19 @@ function calculateTeamOVR() {
     return count > 0 ? Math.round(total / count) : 60;
 }
 
+function isSquadFull() {
+    const parts = gameState.formation.split("-").map(Number);
+    const totalSlots = parts[0] + parts[1] + parts[2] + 1; // Def + Ort + Forv + GK
+    const filledCount = Object.values(gameState.squad).filter(p => p !== null && p !== undefined).length;
+    return filledCount >= totalSlots;
+}
+
 function startMatch() {
+    if (!isSquadFull()) {
+        alert("Maça girebilmek için bütün kadroyu (tüm pozisyonları) eksiksiz doldurmanız gerekmektedir!");
+        return;
+    }
+
     const userOvr = calculateTeamOVR();
     const overlay = document.getElementById("match-overlay");
     const pitch = document.getElementById("match-pitch");
@@ -863,9 +923,14 @@ function renderStatsTable() {
 }
 
 function renderMarketUI() {
-    const list = document.getElementById("market-list");
-    if (!list) return;
-    list.innerHTML = "";
+    const playerList = document.getElementById("player-market-list");
+    const systemList = document.getElementById("system-market-list");
+    if (!playerList || !systemList) return;
+
+    playerList.innerHTML = "";
+    systemList.innerHTML = "";
+
+    // 1. Kullanıcı İlanları Pazarı
     gameState.marketListings.forEach((item, idx) => {
         const card = document.createElement("div");
         card.className = "market-card";
@@ -874,9 +939,27 @@ function renderMarketUI() {
             <div style="font-size:10px; color:#94a3b8;">${item.pos} | GEN: ${item.rating}</div>
             <div style="font-size:9px; color:#38bdf8;">Satıcı: ${item.seller}</div>
             <div style="font-weight:900; color:#10b981; font-size:12px;">$${item.price}</div>
-            <button class="btn btn-green" style="padding:4px; font-size:10px;" onclick="buyMarketPlayer(${idx})">Satın Al</button>
+            <button class="btn btn-green" style="padding:4px; font-size:10px;" onclick="buyPlayerMarket(${idx})">Satın Al</button>
         `;
-        list.appendChild(card);
+        playerList.appendChild(card);
+    });
+    if (gameState.marketListings.length === 0) {
+        playerList.innerHTML = `<div style="font-size:10px; color:#64748b; grid-column:span 2;">Henüz diğer oyuncular tarafından ilan verilmedi.</div>`;
+    }
+
+    // 2. Resmi Sistem Pazarı
+    gameState.systemListings.forEach((item, idx) => {
+        const card = document.createElement("div");
+        card.className = "market-card";
+        card.style.borderColor = "#2563eb";
+        card.innerHTML = `
+            <div style="font-weight:bold; font-size:11px; color:#38bdf8;">${item.name}</div>
+            <div style="font-size:10px; color:#94a3b8;">${item.pos} | GEN: ${item.rating}</div>
+            <div style="font-size:9px; color:#f59e0b;">Satıcı: ${item.seller}</div>
+            <div style="font-weight:900; color:#10b981; font-size:12px;">$${item.price}</div>
+            <button class="btn btn-blue" style="padding:4px; font-size:10px;" onclick="buySystemMarket(${idx})">Sistemden Al</button>
+        `;
+        systemList.appendChild(card);
     });
 }
 
@@ -907,7 +990,7 @@ function listPlayerToMarket() {
     alert("Oyuncu online pazara başarıyla yüklendi!");
 }
 
-function buyMarketPlayer(idx) {
+function buyPlayerMarket(idx) {
     const item = gameState.marketListings[idx];
     if (gameState.coins < item.price) { alert("Yetersiz Coin!"); return; }
     if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
@@ -923,12 +1006,19 @@ function buyMarketPlayer(idx) {
     updateUI();
 }
 
-function refreshMarket() {
-    if (gameState.coins < 15) { alert("Yenilemek için $15 gerekiyor!"); return; }
-    gameState.coins -= 15;
+function buySystemMarket(idx) {
+    const item = gameState.systemListings[idx];
+    if (gameState.coins < item.price) { alert("Yetersiz Coin!"); return; }
+    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
+
+    gameState.coins -= item.price;
+    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos });
+
     saveGame();
+    logConsole(`${item.name} resmi sistem pazarından alındı.`);
+    renderMarketUI();
+    updateBenchUI();
     updateUI();
-    alert("Pazar güncellendi!");
 }
 
 function upgradeFacility() {
@@ -989,6 +1079,14 @@ function adminAddBTC() {
     updateUI();
 }
 
+function adminSaveEventSettings() {
+    gameState.btcEventName = document.getElementById("admin-event-name").value;
+    gameState.btcEventActive = document.getElementById("admin-event-status").value === "active";
+    saveGame();
+    renderBTCShopUI();
+    alert("Bitcoin Event ayarları başarıyla güncellendi!");
+}
+
 function adminAddBTCPlayer() {
     const name = document.getElementById("admin-btc-name").value;
     const pos = document.getElementById("admin-btc-pos").value;
@@ -1003,8 +1101,19 @@ function adminAddBTCPlayer() {
 
 function renderBTCShopUI() {
     const list = document.getElementById("btc-shop-list");
+    const titleEl = document.getElementById("btc-shop-event-title");
     if (!list) return;
+
+    if (titleEl) {
+        titleEl.innerText = gameState.btcEventActive ? `₿ BTC Shop (${gameState.btcEventName})` : `₿ BTC Özel Oyuncu Mağazası (Event Kapalı)`;
+    }
+
     list.innerHTML = "";
+    if (!gameState.btcEventActive) {
+        list.innerHTML = `<div style="font-size:10px; color:#ef4444; grid-column:span 2;">Şu anda aktif bir Bitcoin Event'i bulunmuyor.</div>`;
+        return;
+    }
+
     gameState.btcShopListings.forEach((item, idx) => {
         const card = document.createElement("div");
         card.className = "market-card";
@@ -1068,6 +1177,7 @@ function switchTab(tabId, el) {
     document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
     document.getElementById(`tab-${tabId}`).classList.add("active");
     if (el) el.classList.add("active");
+    if (tabId === 'market') renderMarketUI();
 }
 
 function updateUI() {
