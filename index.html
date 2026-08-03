@@ -192,11 +192,14 @@
                             <div class="c-gold" style="font-size:10px; margin-top:2px;">$80</div>
                         </div>
                     </div>
+                    <div style="margin-top: 8px;">
+                        <button class="btn btn-green" style="font-size: 10px; padding: 6px;" onclick="claimStarterPack()">🎁 Başlangıç 7'lisi Al</button>
+                    </div>
                 </div>
 
                 <div class="panel">
                     <div class="panel-title">
-                        <span>Yedek Kulübesi (Sürükle & Bırak)</span>
+                        <span>Yedek Kulübesi (Tıkla / Sürükle & Bırak)</span>
                         <button style="background:none; border:none; color:#f59e0b; cursor:pointer; font-size:10px;" onclick="fuseDuplicates()">[Birleştir]</button>
                     </div>
                     <div class="inventory" id="inv-list"></div>
@@ -450,6 +453,8 @@
 </div>
 
 <script>
+console.log("v.1.1");
+
 const PLAYERS_DATABASE = {
     ST: [
         { name: "murathan068", rating: 93 }, { name: "r7zvars", rating: 91 },
@@ -543,6 +548,7 @@ let defaultGameState = {
     sponsorBonusAcc: 0,
     playerStats: {}, 
     adminSequence: [],
+    starterPackClaimed: false,
     quests: [
         { id: 1, title: "Kolay Görev: 1 Maç Kazan", desc: "Online veya normal modda 1 maç galibiyeti al.", reward: 0.1, type: "win", target: 1, progress: 0, completed: false },
         { id: 2, title: "Orta Görev: 3 Maç Tamamla", desc: "Toplamda 3 defa maça çık ve tamamla.", reward: 0.3, type: "match", target: 3, progress: 0, completed: false },
@@ -557,7 +563,6 @@ let peer = null;
 let conn = null;
 
 function initPeer() {
-    // Rastgele benzersiz bir ID oluşturarak çakışmaları ve bağlantı kopmalarını önlüyoruz
     const customId = 'tff-' + Math.random().toString(36).substring(2, 9);
     
     peer = new Peer(customId, {
@@ -606,32 +611,6 @@ function setupConnectionEvents() {
     });
 }
 
-function generateUnder75Squad() {
-    gameState.squad = {};
-    const parts = gameState.formation.split("-").map(Number);
-    const defCount = parts[0], cmCount = parts[1], stCount = parts[2];
-    const rows = [
-        { pos: "ST", count: stCount },
-        { pos: "CM", count: cmCount },
-        { pos: "CB", count: defCount },
-        { pos: "GK", count: 1 }
-    ];
-
-    rows.forEach(row => {
-        const pool = PLAYERS_DATABASE[row.pos].filter(p => p.rating < 75);
-        for (let i = 0; i < row.count; i++) {
-            const slotKey = `${row.pos}_${i}`;
-            if (row.pos === "CM" && i === 0) {
-                const forced = PLAYERS_DATABASE.CM.find(p => p.name === "Sayrox101");
-                gameState.squad[slotKey] = { name: forced.name, rating: forced.rating, pos: "CM" };
-            } else if (pool.length > 0) {
-                const randPlayer = pool[Math.floor(Math.random() * pool.length)];
-                gameState.squad[slotKey] = { name: randPlayer.name, rating: randPlayer.rating, pos: row.pos };
-            }
-        }
-    });
-}
-
 function saveGame() {
     localStorage.setItem("tff_draft_save_v70", JSON.stringify(gameState));
 }
@@ -642,18 +621,12 @@ function loadGame() {
         try {
             const parsed = JSON.parse(saved);
             gameState = { ...defaultGameState, ...parsed };
-            if (!gameState.squad || Object.keys(gameState.squad).length === 0) {
-                generateUnder75Squad();
-            }
             if (!gameState.quests) {
                 gameState.quests = JSON.parse(JSON.stringify(defaultGameState.quests));
             }
         } catch (e) {
             console.error("Kayıt yüklenemedi:", e);
-            generateUnder75Squad();
         }
-    } else {
-        generateUnder75Squad();
     }
 }
 
@@ -662,7 +635,6 @@ function resetSaveData() {
         localStorage.removeItem("tff_draft_save_v70");
         gameState = JSON.parse(JSON.stringify(defaultGameState));
         gameState.managerName = getRandomManagerName();
-        generateUnder75Squad();
         initApp();
         alert("Oyun tamamen sıfırlandı, yeni menajer atandı!");
     }
@@ -702,17 +674,61 @@ function getRarity(rating) {
 }
 
 function changeFormation(val) {
+    // 1. Yeni geçilen dizilişin gerektirdiği toplam slot sayısını hesapla
+    const parts = val.split("-").map(Number);
+    const requiredCount = parts[0] + parts[1] + parts[2] + 1;
+
+    // 2. Mevcut sahada yer alan oyuncuları topla
+    const currentOnPitch = [];
     Object.values(gameState.squad).forEach(p => {
-        if (p) gameState.bench.push(p);
+        if (p) currentOnPitch.push(p);
     });
-    gameState.squad = {};
+
+    // 3. Yeni boş kadro objesini hazırla
+    const newSquad = {};
+    const rows = [
+        { pos: "ST", count: parts[2] },
+        { pos: "CM", count: parts[1] },
+        { pos: "CB", count: parts[0] },
+        { pos: "GK", count: 1 }
+    ];
+
+    let playerIndex = 0;
+    // Öncelikli olarak mevcut sahada oynayanları yeni dizilişte uygun yerlerine yerleştir
+    rows.forEach(row => {
+        for (let i = 0; i < row.count; i++) {
+            const slotKey = `${row.pos}_${i}`;
+            if (playerIndex < currentOnPitch.length) {
+                newSquad[slotKey] = currentOnPitch[playerIndex];
+                playerIndex++;
+            }
+        }
+    });
+
+    // Eğer yeni dizilişte eksik slot kalırsa yedek kulübesinden otomatik çek
+    rows.forEach(row => {
+        for (let i = 0; i < row.count; i++) {
+            const slotKey = `${row.pos}_${i}`;
+            if (!newSquad[slotKey] && gameState.bench.length > 0) {
+                newSquad[slotKey] = gameState.bench.shift();
+            }
+        }
+    });
+
+    // Artan veya dışarıda kalan eski saha oyuncularını güvenli bir şekilde yedeğe at (duplication önlendi)
+    while (playerIndex < currentOnPitch.length) {
+        gameState.bench.push(currentOnPitch[playerIndex]);
+        playerIndex++;
+    }
+
     gameState.formation = val;
-    generateUnder75Squad();
+    gameState.squad = newSquad;
+
     saveGame();
     renderFormationSlots();
     updateBenchUI();
     updateUI();
-    logConsole("Diziliş değiştirildi, kadro güncellendi.");
+    logConsole("Diziliş değiştirildi, kadro korundu.");
 }
 
 function changeTactics(val) {
@@ -753,9 +769,14 @@ function renderFormationSlots() {
                 slotEl.innerHTML = `
                     <div class="card-pos">${row.pos}</div>
                     <div class="card-ovr">${player.rating}</div>
-                    <div class="card-name">${player.name}</div>
+                    <div class="card-name">${player.name}</th>
                     ${rarity === 'Prime' ? '<div class="prime-badge">PRIME</div>' : ''}
                 `;
+                
+                // İlk 11'deki oyuncunun üzerine tıklandığında yedek kulübesine dönmesini sağla
+                slotEl.onclick = () => {
+                    movePlayerToBench(slotKey);
+                };
             } else {
                 slotEl.innerHTML = `<span style="color:#64748b; font-weight:bold;">${row.pos}</span>`;
             }
@@ -773,6 +794,20 @@ function renderFormationSlots() {
         }
         container.appendChild(rowDiv);
     });
+}
+
+function movePlayerToBench(slotKey) {
+    const player = gameState.squad[slotKey];
+    if (!player) return;
+
+    gameState.bench.push(player);
+    gameState.squad[slotKey] = null;
+
+    saveGame();
+    logConsole(`${player.name} yedek kulübesine çekildi.`);
+    renderFormationSlots();
+    updateBenchUI();
+    updateUI();
 }
 
 function updateBenchUI() {
@@ -836,6 +871,32 @@ function discardBenchPlayer(idx) {
     saveGame();
     logConsole(`${removed.name} kulüpten gönderildi.`);
     updateBenchUI();
+}
+
+function claimStarterPack() {
+    if (gameState.starterPackClaimed) {
+        alert("Başlangıç 7'lisi paketini zaten aldınız!");
+        return;
+    }
+    if (gameState.bench.length > 5) {
+        alert("Yedek kulübenizde yeterli yer yok!");
+        return;
+    }
+
+    // 1 Kaleci, 2 Defans, 2 Orta Saha, 2 Forvet olmak üzere 7 başlangıç oyuncusu ver
+    const starterPositions = ["GK", "CB", "CB", "CM", "CM", "ST", "ST"];
+    starterPositions.forEach(pos => {
+        const pool = PLAYERS_DATABASE[pos].filter(p => p.rating < 80);
+        const drawn = pool[Math.floor(Math.random() * pool.length)] || PLAYERS_DATABASE[pos][0];
+        gameState.bench.push({ name: drawn.name, rating: drawn.rating, pos: pos });
+    });
+
+    gameState.starterPackClaimed = true;
+    saveGame();
+    updateBenchUI();
+    updateUI();
+    alert("Başlangıç 7'lisi paketiniz yedek kulübenize eklendi!");
+    logConsole("Başlangıç 7'lisi paketi açıldı.");
 }
 
 function openPack(type) {
@@ -930,7 +991,10 @@ function startMatch() {
     overlay.style.display = "flex";
 
     let homeScore = 0, awayScore = 0, minute = 0;
+    
+    // Kadro güçlerine göre maç kazanma/kaybetme olasılık sistemi (OVR farkı bazlı ağırlıklı oran)
     const opponentOvr = Math.floor(userOvr + (Math.random() * 8 - 4));
+    const userWinProbability = 1 / (1 + Math.pow(10, (opponentOvr - userOvr) / 10));
 
     const matchInterval = setInterval(() => {
         minute += 3;
@@ -941,17 +1005,17 @@ function startMatch() {
         ball.style.left = Math.floor(Math.random() * 80 + 10) + "%";
         ball.style.top = Math.floor(Math.random() * 80 + 10) + "%";
 
-        if (Math.random() < 0.2) {
-            if (Math.random() * (userOvr + opponentOvr) < userOvr) {
+        if (Math.random() < 0.22) {
+            if (Math.random() < userWinProbability) {
                 homeScore++;
                 document.getElementById("match-home-score").innerText = homeScore;
                 recordMatchStats(true);
-                document.getElementById("match-live-comment").innerText = `> GOOOL! Takımımız muhteşem bir gol attı!`;
+                document.getElementById("match-live-comment").innerText = `> GOOOL! Güçlü kadromuzla harika bir gol attık!`;
             } else {
                 awayScore++;
                 document.getElementById("match-away-score").innerText = awayScore;
                 recordMatchStats(false);
-                document.getElementById("match-live-comment").innerText = `> GOL! Rakip skoru değiştirdi.`;
+                document.getElementById("match-live-comment").innerText = `> GOL! Rakip takım kalemizde etkili oldu.`;
             }
         }
 
@@ -994,12 +1058,12 @@ function finishMatch(home, away) {
     if (isWin) {
         gameState.wins++;
         reward += 60;
-        alert(`TEBRİKLER! Maçı ${home}-${away} kazandınız. Ödül: $${reward}`);
+        alert(`TEBRİKLER! Güç üstünlüğünüzle maçı ${home}-${away} kazandınız. Ödül: $${reward}`);
     } else if (home === away) {
         reward += 25;
         alert(`BERABERE! Maç ${home}-${away} bitti. Ödül: $${reward}`);
     } else {
-        alert(`MAĞLUBİYET! Maç ${home}-${away} bitti. Ödül: $${reward}`);
+        alert(`MAĞLUBİYET! Rakip kadro gücüyle maçı ${home}-${away} kazandı. Ödül: $${reward}`);
     }
 
     gameState.coins += reward;
