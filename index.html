@@ -552,12 +552,15 @@ let defaultGameState = {
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
 
-// PeerJS Değişkenleri (Kararlı Yapılandırma)
+// PeerJS Değişkenleri
 let peer = null;
 let conn = null;
 
 function initPeer() {
-    peer = new Peer({
+    // Rastgele benzersiz bir ID oluşturarak çakışmaları ve bağlantı kopmalarını önlüyoruz
+    const customId = 'tff-' + Math.random().toString(36.substring(2, 9));
+    
+    peer = new Peer(customId, {
         host: '0.peerjs.com',
         port: 443,
         path: '/',
@@ -568,8 +571,8 @@ function initPeer() {
     peer.on('open', (id) => {
         console.log("Peer ID Alındı: ", id);
         const statusEl = document.getElementById("online-room-status");
-        if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - Kod: TFF-${id.slice(-4).toUpperCase()})`;
-        logConsole(`Oda hazır. Kodunuz: TFF-${id.slice(-4).toUpperCase()}`);
+        if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - Kod: ${id.toUpperCase()})`;
+        logConsole(`Oda hazır. Kodunuz: ${id.toUpperCase()}`);
     });
 
     peer.on('connection', (incomingConn) => {
@@ -587,6 +590,9 @@ function initPeer() {
     peer.on('error', (err) => {
         console.error("PeerJS Hatası:", err);
         logConsole(`Online bağlantı hatası: ${err.type}`);
+        if (err.type === 'peer-unavailable') {
+            alert("Bağlanılmak istenen lobi bulunamadı. Lütfen kodu kontrol edin veya karşı tarafın odada olduğundan emin olun.");
+        }
     });
 }
 
@@ -1311,27 +1317,19 @@ function createOnlineRoom() {
         alert("Peer sunucusuna henüz bağlanılamadı. Lütfen birkaç saniye bekleyin.");
         return;
     }
-    const roomCode = `TFF-${peer.id.slice(-4).toUpperCase()}`;
-    alert(`Oda başarıyla oluşturuldu! Kodunuz: ${roomCode}\nBu kodu arkadaşınızla paylaşabilirsiniz.`);
+    const roomCode = peer.id.toUpperCase();
+    alert(`Oda başarıyla oluşturuldu! Kodunuz: ${roomCode}\nBu tam kodu arkadaşınızla paylaşabilirsiniz.`);
     logConsole(`Oda kodu oluşturuldu: ${roomCode}`);
 }
 
-// GERÇEK P2P ODAYA BAĞLANMA (GÜNCELLENMİŞ VE HATASIZ)
+// GERÇEK P2P ODAYA BAĞLANMA
 function joinOnlineRoom() {
     let inputVal = document.getElementById("room-code-input").value.trim();
     const statusEl = document.getElementById("online-room-status");
     
     if (!inputVal) { 
-        alert("Lütfen bağlanılacak Peer ID veya Oda Kodunu girin!"); 
+        alert("Lütfen bağlanılacak Oda Kodunu girin!"); 
         return; 
-    }
-    
-    // Eğer kullanıcı "TFF-XXXX" formatında girerse tam ID'ye çevir, yoksa doğrudan tam ID olarak kullan
-    if (inputVal.toUpperCase().includes("TFF-")) {
-        const targetSuffix = inputVal.replace("TFF-", "").toLowerCase();
-        if (peer && peer.id) {
-            inputVal = peer.id.substring(0, peer.id.length - 4) + targetSuffix;
-        }
     }
     
     statusEl.innerText = `Bağlanılıyor...`;
