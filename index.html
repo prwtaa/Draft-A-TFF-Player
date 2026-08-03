@@ -558,7 +558,7 @@ let conn = null;
 
 function initPeer() {
     // Rastgele benzersiz bir ID oluşturarak çakışmaları ve bağlantı kopmalarını önlüyoruz
-    const customId = 'tff-' + Math.random().toString(36.substring(2, 9));
+    const customId = 'tff-' + Math.random().toString(36).substring(2, 9);
     
     peer = new Peer(customId, {
         host: '0.peerjs.com',
