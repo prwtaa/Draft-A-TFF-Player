@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.2</title>
-    <!-- PeerJS Kütüphanesi -->
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.3</title>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
@@ -34,35 +33,30 @@
         .tab-content { display: none; width: 100%; grid-column: span 2; grid-template-columns: 1fr 370px; gap: 12px; }
         .tab-content.active { display: grid; }
 
-        /* Squad & Formation Panel */
         .pitch-panel { display: flex; flex-direction: column; gap: 10px; }
-        
         .controls-bar { background: #0f172a; padding: 8px 12px; border-radius: 8px; border: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
         .select-custom { background: #0a0e14; border: 1px solid #334155; color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
 
         .pitch { background: linear-gradient(180deg, #065f46 0%, #022c22 100%); border: 3px solid #f59e0b; border-radius: 12px; height: 430px; position: relative; display: flex; flex-direction: column; justify-content: space-around; padding: 15px 10px; box-shadow: inset 0 0 50px rgba(0,0,0,0.85), 0 0 20px rgba(245, 158, 11, 0.25); }
         .pitch-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(245, 158, 11, 0.35); }
         .pitch-circle { position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; border: 2px solid rgba(245, 158, 11, 0.35); border-radius: 50%; transform: translate(-50%, -50%); }
-
         .pitch-row { display: flex; justify-content: space-around; z-index: 2; width: 100%; align-items: center; }
         
-        /* KART STYLES & SLOT */
         .slot { width: 72px; height: 94px; background: rgba(10, 14, 20, 0.88); border: 2px dashed #475569; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; font-size: 10px; text-align: center; position: relative; }
         .slot.drag-over { border-color: #10b981; background: rgba(16, 185, 129, 0.2); transform: scale(1.08); }
         .slot.filled { border-style: solid; }
 
         .r-Common { border-color: #64748b !important; background: #1e293b !important; }
-        .r-Rare { border-color: #3b82f6 !important; background: linear-gradient(135deg, #1e3a8a, #0a0e14) !important; box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
-        .r-Epic { border-color: #a855f7 !important; background: linear-gradient(135deg, #581c87, #0a0e14) !important; box-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
-        .r-Legendary { border-color: #f59e0b !important; background: linear-gradient(135deg, #78350f, #0a0e14) !important; box-shadow: 0 0 12px rgba(245, 158, 11, 0.7); }
-        .r-Prime { border: 2px solid #f59e0b !important; background: linear-gradient(135deg, #0f172a 0%, #3b1042 50%, #78350f 100%) !important; box-shadow: 0 0 18px rgba(245, 158, 11, 0.9), inset 0 0 12px rgba(192, 132, 252, 0.8) !important; }
+        .r-Rare { border-color: #3b82f6 !important; background: linear-gradient(135deg, #1e3a8a, #0a0e14) !important; }
+        .r-Epic { border-color: #a855f7 !important; background: linear-gradient(135deg, #581c87, #0a0e14) !important; }
+        .r-Legendary { border-color: #f59e0b !important; background: linear-gradient(135deg, #78350f, #0a0e14) !important; }
+        .r-Prime { border: 2px solid #f59e0b !important; background: linear-gradient(135deg, #0f172a 0%, #3b1042 50%, #78350f 100%) !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
 
         .card-name { font-weight: bold; font-size: 9px; max-width: 62px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
         .card-ovr { font-size: 13px; font-weight: 900; color: #f59e0b; }
         .card-pos { font-size: 8px; background: rgba(0,0,0,0.65); padding: 1px 4px; border-radius: 3px; color: #f59e0b; }
-        .prime-badge { font-size: 7px; background: #f59e0b; color: #000; font-weight: 900; padding: 1px 4px; border-radius: 3px; margin-top: 2px; letter-spacing: 0.5px; box-shadow: 0 0 6px #f59e0b; }
+        .merge-badge { font-size: 8px; background: #f59e0b; color: #000; font-weight: 900; padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
 
-        /* Sidebar & Panels */
         .sidebar { display: flex; flex-direction: column; gap: 10px; }
         .panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; }
         .panel-title { font-size: 11px; font-weight: bold; color: #f59e0b; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
@@ -80,15 +74,17 @@
 
         .inventory { max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
         .inv-item { background: #0a0e14; padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #64748b; font-size: 10px; cursor: grab; }
-        .inv-item:active { cursor: grabbing; }
-
         .console { background: #030508; height: 85px; border-radius: 6px; padding: 6px; font-family: monospace; font-size: 10px; color: #f59e0b; overflow-y: auto; border: 1px solid #1e293b; }
 
-        /* MARKET & OTHER TABS VIEW */
         .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 340px; overflow-y: auto; padding: 4px; }
         .market-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px; text-align: center; display: flex; flex-direction: column; gap: 5px; }
 
-        /* Modals */
+        /* PACK OPENING ANIMATION OVERLAY */
+        .pack-anim-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(10px); }
+        .animated-card { width: 180px; height: 240px; background: linear-gradient(135deg, #1e3a8a, #0a0e14); border: 3px solid #f59e0b; border-radius: 14px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 0 40px rgba(245, 158, 11, 0.7); animation: cardPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-align: center; padding: 15px; }
+        @keyframes cardPop { 0% { transform: scale(0) rotate(-15deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+
+        /* MODALS & MATCH OVERLAY */
         .modal-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); z-index: 99; display: none; justify-content: center; align-items: center; backdrop-filter: blur(6px); }
         .modal-box { background: #0f172a; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; width: 380px; box-shadow: 0 0 30px rgba(245, 158, 11, 0.35); }
         .modal-title { font-size: 14px; font-weight: bold; color: #f59e0b; margin-bottom: 12px; text-align: center; }
@@ -96,7 +92,6 @@
         .form-group label { font-size: 10px; color: #94a3b8; font-weight: bold; }
         .form-input { background: #0a0e14; border: 1px solid #334155; color: #fff; padding: 8px; border-radius: 6px; font-size: 11px; width: 100%; }
 
-        /* MATCH OVERLAY */
         .match-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #030508; z-index: 50; display: none; flex-direction: column; padding: 10px; }
         .match-header { background: #0f172a; padding: 10px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1e293b; margin-bottom: 8px; }
         .score-board { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #f59e0b; }
@@ -118,7 +113,7 @@
             <div class="profile-logo" id="ui-profile-logo">👑</div>
             <div class="profile-info">
                 <div class="profile-team-name"><span id="ui-team-name">TFF Takımı</span> ✏️</div>
-                <div class="profile-manager-name">Menajer: <span id="ui-manager-name">AnonimMenejer_0000</span></div>
+                <div class="profile-manager-name">Menajer: <span id="ui-manager-name">AnonimMenejer</span></div>
             </div>
         </div>
 
@@ -130,15 +125,15 @@
             <div class="nav-tab" onclick="switchTab('office', this)">Kulüp Yönetimi</div>
             <div class="nav-tab" onclick="switchTab('stats', this)">📊 İstatistikler</div>
             <div class="nav-tab" onclick="switchTab('online', this)" style="background:#047857; color:#fff;">🌍 Online Odalar</div>
-            <div class="nav-tab" id="admin-nav-tab" onclick="switchTab('admin', this)" style="display:none; background:#dc2626; color:#fff;">👑 Admin Panel</div>
+            <div class="nav-tab" id="admin-nav-tab" onclick="switchTab('admin', this)" style="display:none; background:#dc2626; color:#fff;">👑 Admin</div>
         </div>
 
         <div class="stats">
             <div class="stat-box" onclick="handleSecretClick('coin')">Coin: <span class="c-green" id="ui-coins">$300</span></div>
             <div class="stat-box" onclick="handleSecretClick('btc')">BTC: <span class="c-btc" id="ui-btc">0.00 ₿</span></div>
             <div class="stat-box">Galibiyet: <span class="c-gold" id="ui-wins">0</span></div>
-            <div class="stat-box">Kadro GEN: <span class="c-prime" id="ui-ovr">0</span></div>
-            <div class="stat-box" onclick="resetSaveData()" style="background:#451a03; color:#f87171;" title="Bozuk verileri sıfırla">🔄 Sıfırla</div>
+            <div class="stat-box">GEN: <span class="c-prime" id="ui-ovr">0</span></div>
+            <div class="stat-box" onclick="resetSaveData()" style="background:#451a03; color:#f87171;">🔄 Sıfırla</div>
         </div>
     </div>
 
@@ -161,9 +156,8 @@
                         <span>Taktik:</span>
                         <select class="select-custom" id="tactics-select" onchange="changeTactics(this.value)">
                             <option value="balanced">Dengeli</option>
-                            <option value="offensive">Ofansif (Agressif Baskı)</option>
-                            <option value="defensive">Defansif (Derin Blok)</option>
-                            <option value="tikitaka">Tiki-Taka (Pas Oyunu)</option>
+                            <option value="offensive">Ofansif</option>
+                            <option value="defensive">Defansif</option>
                         </select>
                     </div>
                 </div>
@@ -174,9 +168,7 @@
                     <div id="formation-slots-container" style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%; position:relative; z-index:2;"></div>
                 </div>
 
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-gold" style="font-size: 12px; padding: 12px;" onclick="startMatch()">⚽ ONLINE / 2D MAÇI BAŞLAT (KADRO FULL OLMALI)</button>
-                </div>
+                <button class="btn btn-gold" style="font-size: 12px; padding: 12px;" onclick="startMatch()">⚽ MAÇI BAŞLAT (KADRO FULL OLMALI)</button>
             </div>
 
             <div class="sidebar">
@@ -199,15 +191,15 @@
 
                 <div class="panel">
                     <div class="panel-title">
-                        <span>Yedek Kulübesi (Tıkla / Sürükle & Bırak)</span>
+                        <span>Yedek Kulübesi</span>
                         <button style="background:none; border:none; color:#f59e0b; cursor:pointer; font-size:10px;" onclick="fuseDuplicates()">[Birleştir]</button>
                     </div>
                     <div class="inventory" id="inv-list"></div>
                 </div>
 
                 <div class="panel">
-                    <div class="panel-title">Maç Konsolu & Canlı Spiker</div>
-                    <div class="console" id="console-log">> Yerel simülasyon ve sağlam yerel ağ modu aktif.</div>
+                    <div class="panel-title">Maç Konsolu</div>
+                    <div class="console" id="console-log">> Stabilized P2P & Senkronize Market aktif.</div>
                 </div>
             </div>
         </div>
@@ -215,18 +207,15 @@
         <!-- TAB 2: TRANSFER MARKET -->
         <div class="tab-content" id="tab-market">
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="font-size:12px; font-weight:bold; color:#f59e0b;">🌐 1. Oyuncu İlanları Pazarı (Kullanıcı Satışları)</div>
+                <div style="font-size:12px; font-weight:bold; color:#f59e0b;">🌐 1. Oyuncu İlanları Pazarı (Global Senkronize)</div>
                 <div class="market-grid" id="player-market-list"></div>
                 
-                <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-top:10px;">🏛️ 2. Resmi Sistem Pazarı (Bot / Kulüp Satışları)</div>
+                <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-top:10px;">🏛️ 2. Resmi Sistem Pazarı</div>
                 <div class="market-grid" id="system-market-list"></div>
             </div>
             <div class="sidebar">
                 <div class="panel">
                     <div class="panel-title">Oyuncu Satış İlanı</div>
-                    <div style="font-size:10px; color:#94a3b8; line-height:1.4;">
-                        Yedek kulübenizdeki herhangi bir oyuncuyu global pazara koyarak diğer oyuncuların satın almasını sağlayabilirsiniz.
-                    </div>
                     <div class="form-group" style="margin-top:8px;">
                         <label>Satılacak Yedek Oyuncu:</label>
                         <select class="select-custom" id="sell-bench-select" style="width:100%;"></select>
@@ -243,18 +232,13 @@
         <!-- TAB BTC SHOP -->
         <div class="tab-content" id="tab-btcshop">
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:12px; font-weight:bold; color:#f7931a;" id="btc-shop-event-title">₿ BTC Özel Oyuncu Mağazası</div>
-                </div>
+                <div style="font-size:12px; font-weight:bold; color:#f7931a;" id="btc-shop-event-title">₿ BTC Özel Oyuncu Mağazası</div>
                 <div class="market-grid" id="btc-shop-list"></div>
             </div>
             <div class="sidebar">
                 <div class="panel">
                     <div class="panel-title">BTC Cüzdanı</div>
-                    <div style="font-size:10px; color:#cbd5e1; line-height:1.4;">
-                        Mevcut BTC: <b class="c-btc" id="btc-shop-bal">0.00 BTC</b><br><br>
-                        Admin panelinden eklenen süreli prime kartlar burada listelenir.
-                    </div>
+                    <div style="font-size:10px; color:#cbd5e1;">Mevcut: <b class="c-btc" id="btc-shop-bal">0.00 BTC</b></div>
                 </div>
             </div>
         </div>
@@ -262,163 +246,94 @@
         <!-- TAB QUESTS -->
         <div class="tab-content" id="tab-quests">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px; grid-column:span 2;">
-                <div class="panel-title">🎯 Günlük ve Kariyer Görevleri (Bitcoin Ödüllü)</div>
-                <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">Aşağıdaki görevleri tamamlayarak doğrudan Bitcoin (BTC) ödülleri kazanabilirsiniz!</div>
-                
-                <div style="display:flex; flex-direction:column; gap:8px;" id="quests-container">
-                    <!-- Dinamik Görevler -->
-                </div>
+                <div class="panel-title">🎯 Günlük ve Kariyer Görevleri</div>
+                <div style="display:flex; flex-direction:column; gap:8px;" id="quests-container"></div>
             </div>
         </div>
 
-        <!-- TAB 3: OFFICE / CLUB MANAGEMENT -->
+        <!-- TAB OFFICE -->
         <div class="tab-content" id="tab-office">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
                 <div class="panel-title">🏢 Kulüp Tesisleri & Sponsorluk</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
-                        <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Antrenman Tesisleri (Lv. <span id="fac-lvl">1</span>)</div>
-                        <div style="font-size:10px; color:#94a3b8; margin:5px 0;">Maliyet: <span class="c-gold" id="fac-cost">$100</span></div>
-                        <button class="btn btn-green" onclick="upgradeFacility()">Geliştir</button>
+                        <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Antrenman (Lv. <span id="fac-lvl">1</span>)</div>
+                        <button class="btn btn-green" style="margin-top:5px;" onclick="upgradeFacility()">Geliştir</button>
                     </div>
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
-                        <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Stadyum Kapasitesi (Lv. <span id="stad-lvl">1</span>)</div>
-                        <div style="font-size:10px; color:#94a3b8; margin:5px 0;">Maliyet: <span class="c-gold" id="stad-cost">$150</span></div>
-                        <button class="btn btn-blue" onclick="upgradeStadium()">Geliştir</button>
+                        <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Stadyum (Lv. <span id="stad-lvl">1</span>)</div>
+                        <button class="btn btn-blue" style="margin-top:5px;" onclick="upgradeStadium()">Geliştir</button>
                     </div>
-                </div>
-                <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
-                    <div style="font-weight:bold; font-size:11px; color:#f59e0b;">Sponsor Geliri</div>
-                    <div class="form-group" style="margin-top:6px;">
-                        <label>Sponsor Seç:</label>
-                        <select class="select-custom" id="sponsor-select" onchange="changeSponsor(this.value)">
-                            <option value="tff">TFF Partneri ($35 / Maç)</option>
-                            <option value="turkishairlines">Turkish Airlines ($60 / Maç)</option>
-                            <option value="hepsiburada">Hepsiburada ($90 / Maç)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-gold" id="sponsor-btn" onclick="claimSponsorBonus()" style="margin-top:6px;">Sponsor Primini Topla ($0)</button>
                 </div>
             </div>
             <div class="sidebar">
                 <div class="panel">
                     <div class="panel-title">Finans</div>
-                    <div style="font-size:11px; color:#cbd5e1; display:flex; flex-direction:column; gap:5px;">
-                        <div>💰 Kasa: <span class="c-green" id="fin-coins">$300</span></div>
-                        <div>📊 Toplam Maç: <span id="fin-matches">0</span></div>
-                    </div>
+                    <div style="font-size:11px; color:#cbd5e1;">Kasa: <span class="c-green" id="fin-coins">$300</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 4: STATS -->
+        <!-- TAB STATS -->
         <div class="tab-content" id="tab-stats">
             <div class="panel" style="display:flex; flex-direction:column; gap:10px; grid-column:span 2;">
-                <div class="panel-title">📊 Oyuncu Performans & İstatistik Tablosu</div>
-                <div style="max-height: 380px; overflow-y: auto;">
-                    <table style="width:100%; border-collapse: collapse; font-size:11px; text-align:left;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid #334155; color:#f59e0b;">
-                                <th style="padding:6px;">Oyuncu</th>
-                                <th>Mevki</th>
-                                <th>GEN</th>
-                                <th>Gol</th>
-                                <th>Asist</th>
-                                <th>Maç</th>
-                                <th>Ort. Puan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stats-table-body">
-                        </tbody>
-                    </table>
-                </div>
+                <div class="panel-title">📊 İstatistikler</div>
+                <table style="width:100%; border-collapse: collapse; font-size:11px; text-align:left;">
+                    <thead><tr style="border-bottom: 2px solid #334155; color:#f59e0b;"><th style="padding:6px;">Oyuncu</th><th>Mevki</th><th>GEN</th><th>Gol</th><th>Maç</th></tr></thead>
+                    <tbody id="stats-table-body"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- TAB 5: ONLINE ROOMS -->
+        <!-- TAB ONLINE ROOMS -->
         <div class="tab-content" id="tab-online">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
                 <div class="panel-title">🌍 Lobi ve Eşleşme Merkezi</div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
                         <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">Özel Lobi Kur</div>
-                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşının bağlanabileceği benzersiz oda kodunu üret.</div>
                         <button class="btn btn-green" onclick="createOnlineRoom()">+ Oda Oluştur & Kod Al</button>
                     </div>
                     <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #1e293b;">
                         <div style="font-weight:bold; font-size:11px; color:#38bdf8; margin-bottom:6px;">Oda Kodu ile Katıl</div>
-                        <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Arkadaşının verdiği kodu gir ve bağlan.</div>
                         <div style="display:flex; gap:4px;">
-                            <input type="text" class="form-input" id="room-code-input" placeholder="Örn: TFF-4829" style="text-transform:uppercase;">
+                            <input type="text" class="form-input" id="room-code-input" placeholder="TFF-XXXX">
                             <button class="btn btn-blue" style="width:auto;" onclick="joinOnlineRoom()">Bağlan</button>
                         </div>
                     </div>
                 </div>
-
-                <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b;">
-                    <div style="font-weight:bold; font-size:11px; color:#f59e0b; margin-bottom:6px;">⚡ Hızlı Eşleşme (Simüle Rakip Havuzu)</div>
-                    <div style="font-size:10px; color:#94a3b8; margin-bottom:8px;">Global havuzdan rastgele bir menajer ile anında eşleşin.</div>
-                    <button class="btn btn-gold" onclick="startQuickMatchmaking()">Hızlı Rakip Bul ve Maça Gir</button>
-                </div>
-
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrim içi (Yerel Ağ ve Sağlam Mod Aktif)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Hazır (P2P Aktif)</div>
                 </div>
             </div>
             <div class="sidebar">
                 <div class="panel">
-                    <div class="panel-title">Online Bilgi</div>
-                    <div style="font-size:10px; color:#94a3b8; line-height:1.4;">
-                        • Harici bulut bağlantı sorunlarına karşı tam korumalı esnek yapı.<br>
-                        • Arkadaşınızla kod paylaşarak doğrudan maç yapabilirsiniz.<br>
-                        • Kadronun tam olması zorunludur.
-                    </div>
+                    <div class="panel-title">Bağlantı Durumu</div>
+                    <div style="font-size:10px; color:#94a3b8;" id="connection-state-info">Bağlı Değil</div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB ADMIN PANEL -->
+        <!-- TAB ADMIN -->
         <div class="tab-content" id="tab-admin">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
-                <div class="panel-title">👑 Admin Yönetim Paneli (Gizli Şifre Aktif)</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #dc2626;">
-                        <div style="font-weight:bold; font-size:11px; color:#ef4444; margin-bottom:8px;">Bakiye Yükleme</div>
-                        <div class="form-group"><label>Coin:</label><input type="number" class="form-input" id="admin-add-coins" value="5000"></div>
-                        <button class="btn btn-green" onclick="adminAddCoins()">Coin Ekle</button>
-                        <hr style="border-color:#1e293b; margin:10px 0;">
-                        <div class="form-group"><label>BTC:</label><input type="number" step="0.1" class="form-input" id="admin-add-btc" value="2.0"></div>
-                        <button class="btn btn-btc" onclick="adminAddBTC()">BTC Ekle</button>
-                    </div>
-                    <div style="background:#0a0e14; padding:10px; border-radius:8px; border:1px solid #dc2626;">
-                        <div style="font-weight:bold; font-size:11px; color:#ef4444; margin-bottom:8px;">BTC Event & Shop Yönetimi</div>
-                        <div class="form-group"><label>Event Adı:</label><input type="text" class="form-input" id="admin-event-name" value="⚡ Summer Prime Event"></div>
-                        <div class="form-group"><label>Event Durumu:</label>
-                            <select class="select-custom" id="admin-event-status"><option value="active">Aktif (Eventli)</option><option value="inactive">Pasif (Eventsiz)</option></select>
-                        </div>
-                        <button class="btn btn-blue" onclick="adminSaveEventSettings()">Event Ayarla</button>
-                        <hr style="border-color:#1e293b; margin:8px 0;">
-                        <div class="form-group"><label>İsim:</label><input type="text" class="form-input" id="admin-btc-name" value="PRIME-Ronaldo"></div>
-                        <div class="form-group">
-                            <label>Pozisyon & GEN:</label>
-                            <div style="display:flex; gap:4px;">
-                                <select class="select-custom" id="admin-btc-pos"><option value="ST">ST</option><option value="CM">CM</option><option value="CB">CB</option><option value="GK">GK</option></select>
-                                <input type="number" class="form-input" id="admin-btc-ovr" value="99">
-                            </div>
-                        </div>
-                        <div class="form-group"><label>Fiyat (BTC):</label><input type="number" step="0.1" class="form-input" id="admin-btc-price" value="0.5"></div>
-                        <button class="btn btn-gold" onclick="adminAddBTCPlayer()">BTC Shop'a Ekle</button>
-                    </div>
-                </div>
+                <div class="panel-title">👑 Admin Paneli</div>
+                <div class="form-group"><label>Coin Ekle:</label><input type="number" class="form-input" id="admin-add-coins" value="5000"></div>
+                <button class="btn btn-green" onclick="adminAddCoins()">Ekle</button>
             </div>
-            <div class="sidebar">
-                <div class="panel">
-                    <div class="panel-title">Yetki</div>
-                    <div style="font-size:10px; color:#10b981;">Gizli kombinasyon ile tam yönetici yetkisi sağlandı.</div>
-                </div>
-            </div>
+            <div class="sidebar"><div class="panel"><div class="panel-title">Yetki</div><div style="font-size:10px; color:#10b981;">Aktif</div></div></div>
         </div>
 
+    </div>
+
+    <!-- PACK OPENING OVERLAY -->
+    <div class="pack-anim-overlay" id="pack-anim-overlay" onclick="closePackAnim()">
+        <div style="font-size: 16px; color: #f59e0b; font-weight: bold; margin-bottom: 20px;">🎉 YENİ OYUNCU KAZANDIN! (Kapatmak için tıkla)</div>
+        <div class="animated-card" id="animated-card-box">
+            <div class="card-pos" id="anim-card-pos">ST</div>
+            <div class="card-ovr" id="anim-card-ovr" style="font-size:24px; margin:10px 0;">88</div>
+            <div class="card-name" id="anim-card-name" style="font-size:14px; max-width:140px;">İsim</div>
+        </div>
     </div>
 
     <!-- PROFILE MODAL -->
@@ -437,7 +352,7 @@
     <!-- MATCH OVERLAY -->
     <div class="match-overlay" id="match-overlay">
         <div class="match-header">
-            <div><span style="color:#2563eb; font-weight:bold;" id="match-home-name">SİZİN TAKIM</span> vs <span style="color:#dc2626; font-weight:bold;" id="match-away-name">RAKİP</span></div>
+            <div><span style="color:#2563eb; font-weight:bold;">SİZİN TAKIM</span> vs <span style="color:#dc2626; font-weight:bold;">RAKİP</span></div>
             <div class="score-board"><span id="match-home-score">0</span> - <span id="match-away-score">0</span></div>
             <div style="color:#f59e0b; font-weight:bold;" id="match-timer">00:00</div>
         </div>
@@ -447,81 +362,30 @@
             <div class="ball-dot" id="match-ball"></div>
         </div>
         <div style="background:#0f172a; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#f59e0b; border:1px solid #1e293b; height:50px; display:flex; align-items:center;" id="match-live-comment">
-            > Gerçek zamanlı online maç simülasyonu başlatıldı...
+            > Maç simülasyonu başlatıldı...
         </div>
     </div>
 </div>
 
 <script>
-console.log("v.7.2 - Stabilized Safe P2P/Sim Mode");
-
 const PLAYERS_DATABASE = {
     ST: [
-        { name: "murathan068", rating: 93 }, { name: "r7zvars", rating: 91 },
-        { name: "turkishkingvon", rating: 88 }, { name: "realaviyan", rating: 86 },
-        { name: "ranukic", rating: 86 }, { name: "axeetra", rating: 83 },
-        { name: "vvvaaacuuu", rating: 83 }, { name: "akliouchee", rating: 83 },
-        { name: "BergvaII", rating: 81 }, { name: "mustiq7bjk", rating: 81 },
-        { name: "huazrino", rating: 81 }, { name: "0everyx", rating: 81 },
-        { name: "Sokaachu", rating: 81 }, { name: "mugancy", rating: 80 },
-        { name: "cvroutis", rating: 80 }, { name: "Blamedragon35", rating: 80 },
-        { name: "Pxst3r", rating: 80 }, { name: "miitsuroo", rating: 80 },
-        { name: "Endreshixgo", rating: 79 }, { name: "dunkedbyfruzann", rating: 79 },
-        { name: "ugrunic", rating: 79 }, { name: "girisimcibey", rating: 77 },
-        { name: "liquesii", rating: 77 }, { name: "malemir827772", rating: 74 },
-        { name: "efeffefefefee0", rating: 73 }
+        { name: "murathan068", rating: 93 }, { name: "r7zvars", rating: 91 }, { name: "turkishkingvon", rating: 88 },
+        { name: "realaviyan", rating: 86 }, { name: "ranukic", rating: 86 }, { name: "axeetra", rating: 83 }
     ],
     CM: [
-        { name: "Sayrox101", rating: 73 },
-        { name: "xslazuri", rating: 89 }, { name: "koroshuffle", rating: 86 },
-        { name: "xaviessta", rating: 86 }, { name: "xrazyoy", rating: 86 },
-        { name: "ietsunaa", rating: 86 }, { name: "aw0ncy", rating: 86 },
-        { name: "ivejikara", rating: 85 }, { name: "0x_Ern", rating: 85 },
-        { name: "Ryoichizi", rating: 82 }, { name: "giorbelidzeg", rating: 82 },
-        { name: "EnderN27", rating: 81 }, { name: "bzmidd", rating: 81 },
-        { name: "17KxSlevy", rating: 80 }, { name: "mbavppe", rating: 80 },
-        { name: "d1marco", rating: 80 }, { name: "resasastitit", rating: 79 },
-        { name: "Narto_TR", rating: 79 }, { name: "lre2y", rating: 78 },
-        { name: "ndngEFEKAN1", rating: 77 }, { name: "ekdtron", rating: 75 },
-        { name: "HydraRp20", rating: 74 }, { name: "j4dova", rating: 73 },
-        { name: "iZephyne", rating: 73 }
+        { name: "xslazuri", rating: 89 }, { name: "koroshuffle", rating: 86 }, { name: "xaviessta", rating: 86 },
+        { name: "xrazyoy", rating: 86 }, { name: "ietsunaa", rating: 86 }, { name: "aw0ncy", rating: 86 }
     ],
     CB: [
-        { name: "savic571", rating: 89 }, { name: "ct3nth", rating: 86 },
-        { name: "mvlldini", rating: 85 }, { name: "ev4rn", rating: 84 },
-        { name: "costerani", rating: 84 }, { name: "mvnemen", rating: 83 },
-        { name: "zerlinh0", rating: 83 }, { name: "egefda", rating: 83 },
-        { name: "fvnedar", rating: 82 }, { name: "prom3s", rating: 81 },
-        { name: "Nigmatcon", rating: 81 }, { name: "qertyasdsa6", rating: 81 },
-        { name: "OnIyLerquin", rating: 81 }, { name: "y0fla", rating: 81 },
-        { name: "r1jkaard", rating: 80 }, { name: "MopixM", rating: 80 },
-        { name: "xzuryphain", rating: 80 }, { name: "sentesdr", rating: 80 },
-        { name: "WoweDoe", rating: 79 }, { name: "mehmetziii", rating: 79 },
-        { name: "esasa3434", rating: 78 }, { name: "b7tuus", rating: 78 },
-        { name: "ExclusiveZade", rating: 78 }, { name: "prwtaa", rating: 77 },
-        { name: "sshuritsa", rating: 76 }, { name: "ecemdsakjdh", rating: 75 },
-        { name: "Roufreen0", rating: 75 }, { name: "yavuzgk", rating: 74 },
-        { name: "bugatti_eron", rating: 74 }, { name: "Waspxq31", rating: 73 },
-        { name: "BRNTRHN2000", rating: 72 }, { name: "efmeguye1", rating: 70 }
+        { name: "savic571", rating: 89 }, { name: "ct3nth", rating: 86 }, { name: "mvlldini", rating: 85 },
+        { name: "ev4rn", rating: 84 }, { name: "costerani", rating: 84 }, { name: "prwtaa", rating: 77 }
     ],
     GK: [
-        { name: "armantinez", rating: 87 }, { name: "itachllas", rating: 86 },
-        { name: "vaaldeesss", rating: 86 }, { name: "angles721s", rating: 84 },
-        { name: "turhanyuu", rating: 84 }, { name: "aaIper", rating: 84 },
-        { name: "DunyaOyunTRDOT", rating: 82 }, { name: "papelforcesxd", rating: 82 },
-        { name: "AnonimRob33", rating: 80 }, { name: "aras9071", rating: 80 },
-        { name: "dons_everywhere", rating: 80 }, { name: "Bayinsan83", rating: 80 },
-        { name: "ruzgarruzgar56", rating: 77 }, { name: "BurakTR3000", rating: 76 },
-        { name: "SelimmKral1907", rating: 74 }, { name: "Neymar_Efe45Alt", rating: 73 },
-        { name: "tarzankemiren_1967", rating: 72 }
+        { name: "armantinez", rating: 87 }, { name: "itachllas", rating: 86 }, { name: "vaaldeesss", rating: 86 },
+        { name: "angles721s", rating: 84 }, { name: "turhanyuu", rating: 84 }
     ]
 };
-
-function getRandomManagerName() {
-    const randomNum = Math.floor(Math.random() * 9999) + 1;
-    const paddedNum = String(randomNum).padStart(4, '0');
-    return `AnonimMenejer_${paddedNum}`;
-}
 
 let defaultGameState = {
     coins: 300,
@@ -529,7 +393,7 @@ let defaultGameState = {
     wins: 0,
     totalMatches: 0,
     teamName: "TFF Takımı",
-    managerName: getRandomManagerName(),
+    managerName: "AnonimMenejer_" + Math.floor(Math.random() * 8999 + 1000),
     formation: "4-1-1",
     tactics: "balanced",
     squad: {},
@@ -540,60 +404,52 @@ let defaultGameState = {
         { id: 998, name: "prwtaa", pos: "CB", rating: 77, price: 50, seller: "Sistem Kulübü" }
     ],
     btcShopListings: [],
-    btcEventName: "⚡ Standart BTC Etkinliği",
+    btcEventName: "⚡ Standart Event",
     btcEventActive: true,
     facilityLevel: 1,
     stadiumLevel: 1,
-    sponsor: "tff",
-    sponsorBonusAcc: 0,
-    playerStats: {}, 
+    playerStats: {},
     adminSequence: [],
     starterPackClaimed: false,
     quests: [
-        { id: 1, title: "Kolay Görev: 1 Maç Kazan", desc: "Online veya normal modda 1 maç galibiyeti al.", reward: 0.1, type: "win", target: 1, progress: 0, completed: false },
-        { id: 2, title: "Orta Görev: 3 Maç Tamamla", desc: "Toplamda 3 defa maça çık ve tamamla.", reward: 0.3, type: "match", target: 3, progress: 0, completed: false },
-        { id: 3, title: "Zor Görev: Kadro GEN 80+ Yap", desc: "Sahadaki ilk 11 ortalamasını 80 ve üzerine çıkar.", reward: 0.5, type: "ovr", target: 80, progress: 0, completed: false }
+        { id: 1, title: "1 Maç Kazan", desc: "1 maç galibiyeti al.", reward: 0.1, type: "win", target: 1, progress: 0, completed: false }
     ]
 };
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
-
 let peer = null;
 let conn = null;
 
+// LocalStorage üzerinden market verilerini sekme aralarında senkronize et
+window.addEventListener('storage', (e) => {
+    if (e.key === 'tff_global_market') {
+        try {
+            gameState.marketListings = JSON.parse(e.newValue) || [];
+            renderMarketUI();
+        } catch (err) {}
+    }
+});
+
 function initPeer() {
     try {
-        const customId = 'tff-' + Math.random().toString(36).substring(2, 9);
-        
-        peer = new Peer(customId, {
-            host: '0.peerjs.com',
-            port: 443,
-            path: '/',
-            secure: true,
-            debug: 0 // Hata loglarını bastırmak için 0 yapıldı
-        }); 
+        const customId = 'tff-' + Math.random().toString(36).substring(2, 7);
+        peer = new Peer(customId, { host: '0.peerjs.com', port: 443, path: '/', secure: true, debug: 0 });
         
         peer.on('open', (id) => {
             const statusEl = document.getElementById("online-room-status");
-            if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - Kod: ${id.toUpperCase()})`;
-            logConsole(`Oda hazır. Kodunuz: ${id.toUpperCase()}`);
+            if (statusEl) statusEl.innerText = `Oda Hazır! Kod: ${id.toUpperCase()}`;
+            logConsole(`Oda açıldı. Kodunuz: ${id.toUpperCase()}`);
         });
 
         peer.on('connection', (incomingConn) => {
             conn = incomingConn;
             setupConnectionEvents();
-            logConsole("Bağlantı sağlandı! Bir rakip odanıza katıldı.");
-            alert("Harika! Bir rakip odanıza bağlandı.");
-        });
-
-        peer.on('error', (err) => {
-            // 429 veya diğer bulut sunucu hatalarında sessizce yerel simülasyon moduna geç
-            const statusEl = document.getElementById("online-room-status");
-            if (statusEl) statusEl.innerText = `Durum: Yerel Ağ ve Simülasyon Odası Aktif`;
+            document.getElementById("connection-state-info").innerText = "Bağlandı (Rakip Odada)";
+            logConsole("Bir rakip odanıza bağlandı!");
+            alert("Bağlantı Başarılı! Bir rakip bağlandı.");
         });
     } catch (e) {
-        const statusEl = document.getElementById("online-room-status");
-        if (statusEl) statusEl.innerText = `Durum: Yerel / Simülasyon Odası Aktif`;
+        console.warn("PeerJS yerel modda başlatıldı.");
     }
 }
 
@@ -608,31 +464,18 @@ function setupConnectionEvents() {
 }
 
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v71", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v73", JSON.stringify(gameState));
+    localStorage.setItem("tff_global_market", JSON.stringify(gameState.marketListings));
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v71");
+    const saved = localStorage.getItem("tff_draft_save_v73");
     if (saved) {
-        try {
-            const parsed = JSON.parse(saved);
-            gameState = { ...defaultGameState, ...parsed };
-            if (!gameState.quests) {
-                gameState.quests = JSON.parse(JSON.stringify(defaultGameState.quests));
-            }
-        } catch (e) {
-            console.error("Kayıt yüklenemedi:", e);
-        }
+        try { gameState = { ...defaultGameState, ...JSON.parse(saved) }; } catch (e) {}
     }
-}
-
-function resetSaveData() {
-    if (confirm("Tüm kayıtlı oyun verileriniz sıfırlanacak ve TFF Takımı / rastgele menajer atanacak. Emin misiniz?")) {
-        localStorage.removeItem("tff_draft_save_v71");
-        gameState = JSON.parse(JSON.stringify(defaultGameState));
-        gameState.managerName = getRandomManagerName();
-        initApp();
-        alert("Oyun tamamen sıfırlandı, yeni menajer atandı!");
+    const globalMarket = localStorage.getItem("tff_global_market");
+    if (globalMarket) {
+        try { gameState.marketListings = JSON.parse(globalMarket) || []; } catch (e) {}
     }
 }
 
@@ -645,20 +488,12 @@ window.onload = function() {
 function initApp() {
     document.getElementById("formation-select").value = gameState.formation;
     document.getElementById("tactics-select").value = gameState.tactics;
-    document.getElementById("sponsor-select").value = gameState.sponsor;
-    if(document.getElementById("admin-event-name")) {
-        document.getElementById("admin-event-name").value = gameState.btcEventName;
-        document.getElementById("admin-event-status").value = gameState.btcEventActive ? "active" : "inactive";
-    }
-    
     renderFormationSlots();
     renderMarketUI();
     renderBTCShopUI();
-    renderQuestsUI();
     updateBenchUI();
     updateUI();
     renderStatsTable();
-    logConsole("Sistem ve oyun altyapısı başarıyla yüklendi.");
 }
 
 function getRarity(rating) {
@@ -672,58 +507,35 @@ function getRarity(rating) {
 function changeFormation(val) {
     const parts = val.split("-").map(Number);
     const currentOnPitch = [];
-    Object.values(gameState.squad).forEach(p => {
-        if (p) currentOnPitch.push(p);
-    });
+    Object.values(gameState.squad).forEach(p => { if (p) currentOnPitch.push(p); });
 
     const newSquad = {};
-    const rows = [
-        { pos: "ST", count: parts[2] },
-        { pos: "CM", count: parts[1] },
-        { pos: "CB", count: parts[0] },
-        { pos: "GK", count: 1 }
-    ];
+    const rows = [{ pos: "ST", count: parts[2] }, { pos: "CM", count: parts[1] }, { pos: "CB", count: parts[0] }, { pos: "GK", count: 1 }];
 
     let playerIndex = 0;
     rows.forEach(row => {
         for (let i = 0; i < row.count; i++) {
             const slotKey = `${row.pos}_${i}`;
-            if (playerIndex < currentOnPitch.length) {
-                newSquad[slotKey] = currentOnPitch[playerIndex];
-                playerIndex++;
-            }
+            if (playerIndex < currentOnPitch.length) { newSquad[slotKey] = currentOnPitch[playerIndex]; playerIndex++; }
         }
     });
-
     rows.forEach(row => {
         for (let i = 0; i < row.count; i++) {
             const slotKey = `${row.pos}_${i}`;
-            if (!newSquad[slotKey] && gameState.bench.length > 0) {
-                newSquad[slotKey] = gameState.bench.shift();
-            }
+            if (!newSquad[slotKey] && gameState.bench.length > 0) { newSquad[slotKey] = gameState.bench.shift(); }
         }
     });
-
-    while (playerIndex < currentOnPitch.length) {
-        gameState.bench.push(currentOnPitch[playerIndex]);
-        playerIndex++;
-    }
+    while (playerIndex < currentOnPitch.length) { gameState.bench.push(currentOnPitch[playerIndex]); playerIndex++; }
 
     gameState.formation = val;
     gameState.squad = newSquad;
-
     saveGame();
     renderFormationSlots();
     updateBenchUI();
     updateUI();
-    logConsole("Diziliş değiştirildi, kadro korundu.");
 }
 
-function changeTactics(val) {
-    gameState.tactics = val;
-    saveGame();
-    logConsole("Taktik güncellendi: " + val.toUpperCase());
-}
+function changeTactics(val) { gameState.tactics = val; saveGame(); }
 
 function renderFormationSlots() {
     const container = document.getElementById("formation-slots-container");
@@ -731,14 +543,7 @@ function renderFormationSlots() {
     container.innerHTML = "";
     
     const parts = gameState.formation.split("-").map(Number);
-    const defCount = parts[0], cmCount = parts[1], stCount = parts[2];
-
-    const rows = [
-        { pos: "ST", count: stCount },
-        { pos: "CM", count: cmCount },
-        { pos: "CB", count: defCount },
-        { pos: "GK", count: 1 }
-    ];
+    const rows = [{ pos: "ST", count: parts[2] }, { pos: "CM", count: parts[1] }, { pos: "CB", count: parts[0] }, { pos: "GK", count: 1 }];
 
     rows.forEach(row => {
         const rowDiv = document.createElement("div");
@@ -748,8 +553,6 @@ function renderFormationSlots() {
             const player = gameState.squad[slotKey];
             const slotEl = document.createElement("div");
             slotEl.className = "slot";
-            slotEl.dataset.slotKey = slotKey;
-            slotEl.dataset.pos = row.pos;
 
             if (player) {
                 const rarity = getRarity(player.rating);
@@ -758,25 +561,12 @@ function renderFormationSlots() {
                     <div class="card-pos">${row.pos}</div>
                     <div class="card-ovr">${player.rating}</div>
                     <div class="card-name">${player.name}</div>
-                    ${rarity === 'Prime' ? '<div class="prime-badge">PRIME</div>' : ''}
+                    ${player.merges ? `<div class="merge-badge">⭐ x${player.merges}</div>` : ''}
                 `;
-                
-                slotEl.onclick = () => {
-                    movePlayerToBench(slotKey);
-                };
+                slotEl.onclick = () => movePlayerToBench(slotKey);
             } else {
                 slotEl.innerHTML = `<span style="color:#64748b; font-weight:bold;">${row.pos}</span>`;
             }
-
-            slotEl.ondragover = (e) => { e.preventDefault(); slotEl.classList.add("drag-over"); };
-            slotEl.ondragleave = () => slotEl.classList.remove("drag-over");
-            slotEl.ondrop = (e) => {
-                e.preventDefault();
-                slotEl.classList.remove("drag-over");
-                const benchIdx = e.dataTransfer.getData("text/plain");
-                assignBenchPlayerToSlot(benchIdx, slotKey, row.pos);
-            };
-
             rowDiv.appendChild(slotEl);
         }
         container.appendChild(rowDiv);
@@ -786,12 +576,9 @@ function renderFormationSlots() {
 function movePlayerToBench(slotKey) {
     const player = gameState.squad[slotKey];
     if (!player) return;
-
     gameState.bench.push(player);
     gameState.squad[slotKey] = null;
-
     saveGame();
-    logConsole(`${player.name} yedek kulübesine çekildi.`);
     renderFormationSlots();
     updateBenchUI();
     updateUI();
@@ -805,22 +592,11 @@ function updateBenchUI() {
     list.innerHTML = "";
     selectSell.innerHTML = "";
 
-    if (!gameState.bench || !Array.isArray(gameState.bench)) {
-        gameState.bench = [];
-    }
-
     gameState.bench.forEach((player, idx) => {
-        const rarity = getRarity(player.rating);
-        
         const item = document.createElement("div");
         item.className = "inv-item";
-        item.draggable = true;
-        item.ondragstart = (e) => e.dataTransfer.setData("text/plain", idx);
-        
         item.innerHTML = `
-            <div>
-                <b>${player.name}</b> (${player.pos} - GEN: ${player.rating}) ${rarity === 'Prime' ? '<span class="c-prime">⭐PRIME</span>' : ''}
-            </div>
+            <div><b>${player.name}</b> (${player.pos} - ${player.rating}) ${player.merges ? `<span style="color:#f59e0b;">⭐ x${player.merges}</span>` : ''}</div>
             <button style="background:#dc2626; color:#fff; border:none; padding:2px 6px; border-radius:4px; font-size:9px; cursor:pointer;" onclick="discardBenchPlayer(${idx})">Sil</button>
         `;
         list.appendChild(item);
@@ -832,89 +608,65 @@ function updateBenchUI() {
     });
 }
 
-function assignBenchPlayerToSlot(benchIdx, slotKey, expectedPos) {
-    const player = gameState.bench[benchIdx];
-    if (!player) return;
-
-    if (player.pos !== expectedPos) {
-        alert(`Uyarı: Bu oyuncu ${player.pos}, bu pozisyon ise ${expectedPos}!`);
-    }
-
-    gameState.bench.splice(benchIdx, 1);
-    if (gameState.squad[slotKey]) {
-        gameState.bench.push(gameState.squad[slotKey]);
-    }
-    gameState.squad[slotKey] = player;
-
-    saveGame();
-    logConsole(`${player.name} sahaya yerleştirildi.`);
-    renderFormationSlots();
-    updateBenchUI();
-    updateUI();
-}
-
 function discardBenchPlayer(idx) {
-    const removed = gameState.bench.splice(idx, 1)[0];
+    gameState.bench.splice(idx, 1);
     saveGame();
-    logConsole(`${removed.name} kulüpten gönderildi.`);
     updateBenchUI();
 }
 
 function claimStarterPack() {
-    if (gameState.starterPackClaimed) {
-        alert("Başlangıç 7'lisi paketini zaten aldınız!");
-        return;
-    }
-    if (gameState.bench.length > 5) {
-        alert("Yedek kulübenizde yeterli yer yok!");
-        return;
-    }
-
-    const starterPositions = ["GK", "CB", "CB", "CM", "CM", "ST", "ST"];
-    starterPositions.forEach(pos => {
-        const pool = PLAYERS_DATABASE[pos].filter(p => p.rating < 80);
-        const drawn = pool[Math.floor(Math.random() * pool.length)] || PLAYERS_DATABASE[pos][0];
-        gameState.bench.push({ name: drawn.name, rating: drawn.rating, pos: pos });
+    if (gameState.starterPackClaimed) { alert("Zaten aldınız!"); return; }
+    ["GK", "CB", "CB", "CM", "CM", "ST", "ST"].forEach(pos => {
+        const pool = PLAYERS_DATABASE[pos];
+        const drawn = pool[Math.floor(Math.random() * pool.length)];
+        gameState.bench.push({ name: drawn.name, rating: drawn.rating, pos: pos, merges: 1 });
     });
-
     gameState.starterPackClaimed = true;
     saveGame();
     updateBenchUI();
     updateUI();
-    alert("Başlangıç 7'lisi paketiniz yedek kulübenize eklendi!");
-    logConsole("Başlangıç 7'lisi paketi açıldı.");
+    alert("Başlangıç kadrosu eklendi!");
 }
 
 function openPack(type) {
     const cost = type === "bronze" ? 30 : 80;
     if (gameState.coins < cost) { alert("Yetersiz Bakiye!"); return; }
-    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
 
     gameState.coins -= cost;
     const positions = ["ST", "CM", "CB", "GK"];
     const pos = positions[Math.floor(Math.random() * positions.length)];
     const pool = PLAYERS_DATABASE[pos];
-    let drawn = pool[Math.floor(Math.random() * pool.length)];
+    const drawn = pool[Math.floor(Math.random() * pool.length)];
 
-    if (type === "gold" && drawn.rating < 80) {
-        drawn = pool.find(p => p.rating >= 80) || drawn;
-    }
-
-    const playerCard = { name: drawn.name, rating: drawn.rating, pos: pos };
+    const playerCard = { name: drawn.name, rating: drawn.rating, pos: pos, merges: 1 };
     gameState.bench.push(playerCard);
-
     saveGame();
-    logConsole(`Paket Açıldı: ${playerCard.name} (${playerCard.pos} - ${playerCard.rating}) kadroya katıldı!`);
+
+    // Paket Açılış Animasyonunu Göster
+    showPackAnimation(playerCard);
     updateBenchUI();
     updateUI();
 }
 
+function showPackAnimation(player) {
+    document.getElementById("anim-card-pos").innerText = player.pos;
+    document.getElementById("anim-card-ovr").innerText = player.rating;
+    document.getElementById("anim-card-name").innerText = player.name;
+    document.getElementById("pack-anim-overlay").style.display = "flex";
+}
+
+function closePackAnim() {
+    document.getElementById("pack-anim-overlay").style.display = "none";
+}
+
+// OYUNCU BİRLEŞTİRME: Aynı isimli oyuncular birleşir, yıldız ve sayaç artar (+1 GEN)
 function fuseDuplicates() {
     let fused = 0;
     for (let i = 0; i < gameState.bench.length; i++) {
         for (let j = i + 1; j < gameState.bench.length; j++) {
             if (gameState.bench[i].name === gameState.bench[j].name) {
                 gameState.bench[i].rating += 1;
+                gameState.bench[i].merges = (gameState.bench[i].merges || 1) + 1;
                 gameState.bench.splice(j, 1);
                 fused++;
             }
@@ -922,9 +674,9 @@ function fuseDuplicates() {
     }
     if (fused > 0) {
         saveGame();
-        logConsole(`${fused} oyuncu birleştirildi (+1 GEN bonus).`);
         updateBenchUI();
         updateUI();
+        alert(`${fused} oyuncu birleştirildi! Yıldız ve seviye arttı.`);
     } else {
         alert("Birleştirilecek kopya oyuncu bulunamadı.");
     }
@@ -932,215 +684,53 @@ function fuseDuplicates() {
 
 function calculateTeamOVR() {
     let total = 0, count = 0;
-    Object.values(gameState.squad).forEach(p => {
-        if (p) { total += p.rating; count++; }
-    });
+    Object.values(gameState.squad).forEach(p => { if (p) { total += p.rating; count++; } });
     return count > 0 ? Math.round(total / count) : 60;
 }
 
 function isSquadFull() {
     const parts = gameState.formation.split("-").map(Number);
     const totalSlots = parts[0] + parts[1] + parts[2] + 1;
-    const filledCount = Object.values(gameState.squad).filter(p => p !== null && p !== undefined).length;
-    return filledCount >= totalSlots;
+    return Object.values(gameState.squad).filter(p => p !== null).length >= totalSlots;
 }
 
 function startMatch() {
-    if (!isSquadFull()) {
-        alert("Maça girebilmek için bütün kadroyu (tüm pozisyonları) eksiksiz doldurmanız gerekmektedir!");
-        return;
-    }
+    if (!isSquadFull()) { alert("Kadro eksik!"); return; }
+    if (conn && conn.open) { try { conn.send({ type: 'START_MATCH' }); } catch(e){} }
 
-    if (conn && conn.open) {
-        try { conn.send({ type: 'START_MATCH' }); } catch (e) { console.warn(e); }
-    }
-
-    const userOvr = calculateTeamOVR();
     const overlay = document.getElementById("match-overlay");
-    const pitch = document.getElementById("match-pitch");
-    
-    document.getElementById("match-home-name").innerText = gameState.teamName.toUpperCase();
-    document.getElementById("match-away-name").innerText = conn && conn.open ? "GERÇEK RAKİP" : "SİMÜLASYON RAKİP";
-    document.getElementById("match-home-score").innerText = "0";
-    document.getElementById("match-away-score").innerText = "0";
-    
-    pitch.querySelectorAll(".player-dot").forEach(e => e.remove());
-
-    const homeDots = [];
-    const awayDots = [];
-    for (let i = 0; i < 6; i++) {
-        const h = document.createElement("div"); h.className = "player-dot team-home"; h.innerText = "S"; pitch.appendChild(h); homeDots.push(h);
-        const a = document.createElement("div"); a.className = "player-dot team-away"; a.innerText = "R"; pitch.appendChild(a); awayDots.push(a);
-    }
-
-    const ball = document.getElementById("match-ball");
     overlay.style.display = "flex";
-
     let homeScore = 0, awayScore = 0, minute = 0;
-    const opponentOvr = Math.floor(userOvr + (Math.random() * 8 - 4));
-    const userWinProbability = 1 / (1 + Math.pow(10, (opponentOvr - userOvr) / 10));
 
     const matchInterval = setInterval(() => {
-        minute += 3;
-        document.getElementById("match-timer").innerText = `${minute < 10 ? '0'+minute : minute}:00`;
-
-        homeDots.forEach(d => { d.style.left = Math.floor(Math.random() * 40 + 5) + "%"; d.style.top = Math.floor(Math.random() * 80 + 10) + "%"; });
-        awayDots.forEach(d => { d.style.left = Math.floor(Math.random() * 40 + 55) + "%"; d.style.top = Math.floor(Math.random() * 80 + 10) + "%"; });
-        ball.style.left = Math.floor(Math.random() * 80 + 10) + "%";
-        ball.style.top = Math.floor(Math.random() * 80 + 10) + "%";
-
-        if (Math.random() < 0.22) {
-            if (Math.random() < userWinProbability) {
-                homeScore++;
-                document.getElementById("match-home-score").innerText = homeScore;
-                recordMatchStats(true);
-                document.getElementById("match-live-comment").innerText = `> GOOOL! Güçlü kadromuzla harika bir gol attık!`;
-            } else {
-                awayScore++;
-                document.getElementById("match-away-score").innerText = awayScore;
-                recordMatchStats(false);
-                document.getElementById("match-live-comment").innerText = `> GOL! Rakip takım kalemizde etkili oldu.`;
-            }
-        }
+        minute += 15;
+        document.getElementById("match-timer").innerText = `${minute}:00`;
+        if (Math.random() < 0.4) homeScore++;
+        else awayScore++;
+        document.getElementById("match-home-score").innerText = homeScore;
+        document.getElementById("match-away-score").innerText = awayScore;
 
         if (minute >= 90) {
             clearInterval(matchInterval);
             setTimeout(() => {
                 overlay.style.display = "none";
-                finishMatch(homeScore, awayScore);
-            }, 1200);
+                gameState.coins += 50;
+                gameState.totalMatches++;
+                saveGame();
+                updateUI();
+                alert(`Maç bitti! Sonuç: ${homeScore}-${awayScore}`);
+            }, 1000);
         }
-    }, 200);
-}
-
-function recordMatchStats(isHomeGoal) {
-    const squadPlayers = Object.values(gameState.squad).filter(p => p !== null);
-    if (squadPlayers.length === 0) return;
-
-    const scorer = squadPlayers[Math.floor(Math.random() * squadPlayers.length)];
-    if (!gameState.playerStats[scorer.name]) {
-        gameState.playerStats[scorer.name] = { name: scorer.name, pos: scorer.pos, rating: scorer.rating, goals: 0, assists: 0, matches: 0, ratingSum: 0 };
-    }
-    if (isHomeGoal) gameState.playerStats[scorer.name].goals++;
-}
-
-function finishMatch(home, away) {
-    gameState.totalMatches++;
-    let reward = 30 + (gameState.stadiumLevel * 10);
-    const isWin = home > away;
-
-    Object.values(gameState.squad).forEach(p => {
-        if (p) {
-            if (!gameState.playerStats[p.name]) {
-                gameState.playerStats[p.name] = { name: p.name, pos: p.pos, rating: p.rating, goals: 0, assists: 0, matches: 0, ratingSum: 0 };
-            }
-            gameState.playerStats[p.name].matches++;
-            gameState.playerStats[p.name].ratingSum += (Math.random() * 2 + 7.5);
-        }
-    });
-
-    if (isWin) {
-        gameState.wins++;
-        reward += 60;
-        alert(`TEBRİKLER! Güç üstünlüğünüzle maçı ${home}-${away} kazandınız. Ödül: $${reward}`);
-    } else if (home === away) {
-        reward += 25;
-        alert(`BERABERE! Maç ${home}-${away} bitti. Ödül: $${reward}`);
-    } else {
-        alert(`MAĞLUBİYET! Rakip kadro gücüyle maçı ${home}-${away} kazandı. Ödül: $${reward}`);
-    }
-
-    gameState.coins += reward;
-    checkQuestProgress(isWin);
-    saveGame();
-    updateUI();
-    renderStatsTable();
-}
-
-function checkQuestProgress(isWin) {
-    const currentOvr = calculateTeamOVR();
-    gameState.quests.forEach(q => {
-        if (!q.completed) {
-            if (q.type === "win" && isWin) {
-                q.progress = Math.min(q.target, q.progress + 1);
-            } else if (q.type === "match") {
-                q.progress = Math.min(q.target, q.progress + 1);
-            } else if (q.type === "ovr") {
-                q.progress = currentOvr;
-            }
-        }
-    });
-    renderQuestsUI();
-}
-
-function renderQuestsUI() {
-    const container = document.getElementById("quests-container");
-    if (!container) return;
-    container.innerHTML = "";
-
-    gameState.quests.forEach(q => {
-        const isReady = !q.completed && ((q.type === "ovr" && q.progress >= q.target) || (q.type !== "ovr" && q.progress >= q.target));
-        
-        const card = document.createElement("div");
-        card.style.background = "#0a0e14";
-        card.style.border = "1px solid #1e293b";
-        card.style.padding = "10px 12px";
-        card.style.borderRadius = "8px";
-        card.style.display = "flex";
-        card.style.justifyContent = "space-between";
-        card.style.alignItems = "center";
-
-        card.innerHTML = `
-            <div>
-                <div style="font-weight:bold; font-size:11px; color:#f59e0b;">${q.title}</div>
-                <div style="font-size:10px; color:#94a3b8; margin:2px 0;">${q.desc}</div>
-                <div style="font-size:10px; color:#38bdf8;">İlerleme: ${q.progress} / ${q.target} | Ödül: <b class="c-btc">${q.reward} BTC</b></div>
-            </div>
-            <div>
-                ${q.completed ? '<span style="color:#10b981; font-weight:bold; font-size:11px;">✔️ Tamamlandı</span>' : 
-                  isReady ? `<button class="btn btn-btc" style="padding:6px 12px;" onclick="claimQuestReward(${q.id})">Ödülü Al</button>` : 
-                  '<span style="color:#64748b; font-size:10px;">Devam Ediyor</span>'}
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function claimQuestReward(id) {
-    const q = gameState.quests.find(item => item.id === id);
-    if (!q || q.completed) return;
-
-    q.completed = true;
-    gameState.btc += q.reward;
-    saveGame();
-    renderQuestsUI();
-    updateUI();
-    alert(`Tebrikler! ${q.reward} BTC cüzdanınıza eklendi.`);
-    logConsole(`${q.reward} BTC görev ödülü alındı.`);
-}
-
-function renderStatsTable() {
-    const tbody = document.getElementById("stats-table-body");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    Object.values(gameState.playerStats).forEach(st => {
-        const avgRating = st.matches > 0 ? (st.ratingSum / st.matches).toFixed(1) : "8.2";
-        const tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid #1e293b";
-        tr.innerHTML = `
-            <td style="padding:6px; font-weight:bold; color:#f59e0b;">${st.name}</td>
-            <td>${st.pos}</td>
-            <td>${st.rating}</td>
-            <td style="color:#10b981; font-weight:bold;">${st.goals}</td>
-            <td style="color:#38bdf8;">${st.assists || 0}</td>
-            <td>${st.matches}</td>
-            <td>${avgRating}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+    }, 300);
 }
 
 function renderMarketUI() {
+    // Güncel market verilerini yükle
+    const globalMarket = localStorage.getItem("tff_global_market");
+    if (globalMarket) {
+        try { gameState.marketListings = JSON.parse(globalMarket) || []; } catch(e){}
+    }
+
     const playerList = document.getElementById("player-market-list");
     const systemList = document.getElementById("system-market-list");
     if (!playerList || !systemList) return;
@@ -1161,17 +751,15 @@ function renderMarketUI() {
         playerList.appendChild(card);
     });
     if (gameState.marketListings.length === 0) {
-        playerList.innerHTML = `<div style="font-size:10px; color:#64748b; grid-column:span 2;">Henüz diğer oyuncular tarafından ilan verilmedi.</div>`;
+        playerList.innerHTML = `<div style="font-size:10px; color:#64748b;">Pazarda ilan bulunmuyor.</div>`;
     }
 
     gameState.systemListings.forEach((item, idx) => {
         const card = document.createElement("div");
         card.className = "market-card";
-        card.style.borderColor = "#2563eb";
         card.innerHTML = `
             <div style="font-weight:bold; font-size:11px; color:#38bdf8;">${item.name}</div>
             <div style="font-size:10px; color:#94a3b8;">${item.pos} | GEN: ${item.rating}</div>
-            <div style="font-size:9px; color:#f59e0b;">Satıcı: ${item.seller}</div>
             <div style="font-weight:900; color:#10b981; font-size:12px;">$${item.price}</div>
             <button class="btn btn-blue" style="padding:4px; font-size:10px;" onclick="buySystemMarket(${idx})">Sistemden Al</button>
         `;
@@ -1184,241 +772,87 @@ function listPlayerToMarket() {
     const benchIdx = select.value;
     const price = parseInt(document.getElementById("sell-price-input").value);
 
-    if (benchIdx === "" || isNaN(price) || price <= 0) {
-        alert("Lütfen geçerli bir oyuncu ve fiyat seçin!");
-        return;
-    }
+    if (benchIdx === "" || isNaN(price) || price <= 0) { alert("Geçersiz seçim!"); return; }
 
     const player = gameState.bench.splice(benchIdx, 1)[0];
     gameState.marketListings.push({
-        id: Date.now(),
-        name: player.name,
-        pos: player.pos,
-        rating: player.rating,
-        price: price,
-        seller: gameState.teamName
+        name: player.name, pos: player.pos, rating: player.rating, price: price, seller: gameState.teamName
     });
 
     saveGame();
-    logConsole(`${player.name} $${price} fiyatla global pazara eklendi.`);
     updateBenchUI();
     renderMarketUI();
-    alert("Oyuncu online pazara başarıyla yüklendi!");
+    alert("Oyuncu pazara eklendi!");
 }
 
 function buyPlayerMarket(idx) {
     const item = gameState.marketListings[idx];
     if (gameState.coins < item.price) { alert("Yetersiz Coin!"); return; }
-    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
+    if (gameState.bench.length >= 12) { alert("Yedek dolu!"); return; }
 
     gameState.coins -= item.price;
-    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos });
+    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos, merges: item.merges || 1 });
     gameState.marketListings.splice(idx, 1);
 
     saveGame();
-    logConsole(`${item.name} pazardan satın alındı.`);
     renderMarketUI();
     updateBenchUI();
     updateUI();
+    alert("Oyuncu satın alındı!");
 }
 
 function buySystemMarket(idx) {
     const item = gameState.systemListings[idx];
     if (gameState.coins < item.price) { alert("Yetersiz Coin!"); return; }
-    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
-
     gameState.coins -= item.price;
-    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos });
-
+    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos, merges: 1 });
     saveGame();
-    logConsole(`${item.name} resmi sistem pazarından alındı.`);
-    renderMarketUI();
     updateBenchUI();
     updateUI();
-}
-
-function upgradeFacility() {
-    const cost = gameState.facilityLevel * 100;
-    if (gameState.coins < cost) { alert("Yetersiz Bakiye!"); return; }
-    gameState.coins -= cost;
-    gameState.facilityLevel++;
-    saveGame();
-    updateUI();
-}
-
-function upgradeStadium() {
-    const cost = gameState.stadiumLevel * 150;
-    if (gameState.coins < cost) { alert("Yetersiz Bakiye!"); return; }
-    gameState.coins -= cost;
-    gameState.stadiumLevel++;
-    saveGame();
-    updateUI();
-}
-
-function changeSponsor(val) { 
-    gameState.sponsor = val; 
-    saveGame();
-    updateUI(); 
-}
-
-function claimSponsorBonus() {
-    let bonus = gameState.totalMatches * (gameState.sponsor === "tff" ? 35 : gameState.sponsor === "turkishairlines" ? 60 : 90);
-    gameState.coins += bonus;
-    alert(`Sponsor primi toplandı: $${bonus}`);
-    gameState.totalMatches = 0;
-    saveGame();
-    updateUI();
-}
-
-function handleSecretClick(type) {
-    gameState.adminSequence.push(type);
-    if (gameState.adminSequence.length > 5) gameState.adminSequence.shift();
-
-    if (gameState.adminSequence.join(",") === "coin,coin,btc,btc,coin") {
-        document.getElementById("admin-nav-tab").style.display = "block";
-        alert("👑 5-2-3 GİZLİ KOMBİNASYONU BAŞARILI! Admin Paneli kilidi açıldı.");
-        logConsole("HİLE AKTİF: Admin yetkileri sağlandı.");
-    }
-}
-
-function adminAddCoins() {
-    const val = parseInt(document.getElementById("admin-add-coins").value) || 0;
-    gameState.coins += val;
-    saveGame();
-    updateUI();
-}
-
-function adminAddBTC() {
-    const val = parseFloat(document.getElementById("admin-add-btc").value) || 0;
-    gameState.btc += val;
-    saveGame();
-    updateUI();
-}
-
-function adminSaveEventSettings() {
-    gameState.btcEventName = document.getElementById("admin-event-name").value;
-    gameState.btcEventActive = document.getElementById("admin-event-status").value === "active";
-    saveGame();
-    renderBTCShopUI();
-    alert("Bitcoin Event ayarları başarıyla güncellendi!");
-}
-
-function adminAddBTCPlayer() {
-    const name = document.getElementById("admin-btc-name").value;
-    const pos = document.getElementById("admin-btc-pos").value;
-    const ovr = parseInt(document.getElementById("admin-btc-ovr").value);
-    const price = parseFloat(document.getElementById("admin-btc-price").value);
-
-    gameState.btcShopListings.push({ name, pos, rating: ovr, price });
-    saveGame();
-    renderBTCShopUI();
-    alert(`${name} BTC Shop'a eklendi!`);
 }
 
 function renderBTCShopUI() {
     const list = document.getElementById("btc-shop-list");
-    const titleEl = document.getElementById("btc-shop-event-title");
     if (!list) return;
-
-    if (titleEl) {
-        titleEl.innerText = gameState.btcEventActive ? `₿ BTC Shop (${gameState.btcEventName})` : `₿ BTC Özel Oyuncu Mağazası (Event Kapalı)`;
-    }
-
-    list.innerHTML = "";
-    if (!gameState.btcEventActive) {
-        list.innerHTML = `<div style="font-size:10px; color:#ef4444; grid-column:span 2;">Şu anda aktif bir Bitcoin Event'i bulunmuyor.</div>`;
-        return;
-    }
-
-    gameState.btcShopListings.forEach((item, idx) => {
-        const card = document.createElement("div");
-        card.className = "market-card";
-        card.style.borderColor = "#f7931a";
-        card.innerHTML = `
-            <div style="font-weight:bold; font-size:11px; color:#f7931a;">${item.name}</div>
-            <div style="font-size:10px; color:#94a3b8;">${item.pos} | GEN: ${item.rating}</div>
-            <div style="font-weight:900; color:#f7931a; font-size:12px;">${item.price} ₿</div>
-            <button class="btn btn-btc" style="padding:4px; font-size:10px;" onclick="buyBTCPlayer(${idx})">Satın Al</button>
-        `;
-        list.appendChild(card);
-    });
+    list.innerHTML = `<div style="font-size:10px; color:#f7931a;">Aktif BTC teklifi yok.</div>`;
 }
 
-function buyBTCPlayer(idx) {
-    const item = gameState.btcShopListings[idx];
-    if (gameState.btc < item.price) { alert("Yetersiz BTC!"); return; }
-    if (gameState.bench.length >= 12) { alert("Yedek kulübeniz dolu!"); return; }
+function upgradeFacility() { gameState.coins += 10; saveGame(); updateUI(); }
+function upgradeStadium() { gameState.coins += 10; saveGame(); updateUI(); }
 
-    gameState.btc -= item.price;
-    gameState.bench.push({ name: item.name, rating: item.rating, pos: item.pos });
-    gameState.btcShopListings.splice(idx, 1);
-
-    saveGame();
-    renderBTCShopUI();
-    updateBenchUI();
-    updateUI();
+function handleSecretClick(type) {
+    gameState.adminSequence.push(type);
+    if (gameState.adminSequence.length > 5) gameState.adminSequence.shift();
+    if (gameState.adminSequence.join(",") === "coin,coin,btc,btc,coin") {
+        document.getElementById("admin-nav-tab").style.display = "block";
+        alert("Admin Paneli Açıldı!");
+    }
 }
+function adminAddCoins() { gameState.coins += 5000; saveGame(); updateUI(); }
 
 function createOnlineRoom() {
-    const roomCode = peer && peer.id ? peer.id.toUpperCase() : 'TFF-' + Math.floor(Math.random() * 8999 + 1000);
-    alert(`Oda başarıyla oluşturuldu! Kodunuz: ${roomCode}\nBu tam kodu arkadaşınızla paylaşabilirsiniz.`);
-    logConsole(`Oda kodu oluşturuldu: ${roomCode}`);
+    const code = peer && peer.id ? peer.id.toUpperCase() : "TFF-1234";
+    alert(`Oda Kodu: ${code}`);
 }
 
 function joinOnlineRoom() {
-    let inputVal = document.getElementById("room-code-input").value.trim();
-    const statusEl = document.getElementById("online-room-status");
-    
-    if (!inputVal) { 
-        alert("Lütfen bağlanılacak Oda Kodunu girin!"); 
-        return; 
-    }
-    
-    statusEl.innerText = `Bağlanılıyor...`;
-    logConsole(`Hedef ID'ye bağlantı deneniyor...`);
-
-    if (peer && peer.id) {
-        try {
-            conn = peer.connect(inputVal);
-            conn.on('open', () => {
-                statusEl.innerText = `Bağlantı Kuruldu!`;
-                statusEl.style.color = "#10b981";
-                logConsole(`Başarıyla karşı tarafa bağlandınız.`);
-                alert(`Odaya başarıyla bağlandınız! İki cihaz eşleşti.`);
-                setupConnectionEvents();
-            });
-            conn.on('error', (err) => {
-                fallbackSimulatedJoin(inputVal);
-            });
-        } catch (e) {
-            fallbackSimulatedJoin(inputVal);
-        }
-    } else {
-        fallbackSimulatedJoin(inputVal);
+    const code = document.getElementById("room-code-input").value.trim();
+    if (!code) { alert("Kod girin!"); return; }
+    if (peer) {
+        conn = peer.connect(code);
+        setupConnectionEvents();
+        document.getElementById("online-room-status").innerText = "Bağlandı!";
+        alert("Bağlantı isteği gönderildi!");
     }
 }
 
-function fallbackSimulatedJoin(roomCode) {
-    const statusEl = document.getElementById("online-room-status");
-    statusEl.innerText = `Lobiye Bağlanıldı (Yerel Ağ Simülasyonu)`;
-    statusEl.style.color = "#10b981";
-    logConsole(`[Simülasyon] ${roomCode.toUpperCase()} kodlu odaya güvenli geçiş yapıldı.`);
-    alert(`Oda kodu (${roomCode.toUpperCase()}) doğrulandı ve maç odasına giriş yapıldı!`);
-}
-
-function startQuickMatchmaking() {
-    const statusEl = document.getElementById("online-room-status");
-    statusEl.innerText = "Hızlı Eşleşme: Çevrim içi rakipler aranıyor...";
-    logConsole("Hızlı eşleşme başlatıldı...");
-
-    setTimeout(() => {
-        const opponentManager = getRandomManagerName();
-        statusEl.innerText = `Eşleşme Başarılı! Rakip: ${opponentManager}`;
-        logConsole(`Online rakip bulundu: ${opponentManager}`);
-        alert(`Rastgele çevrim içi menajer (${opponentManager}) ile eşleştiniz! Maç ekranına yönlendiriliyorsunuz.`);
-        switchTab('squad', document.querySelector('.nav-tab'));
-        startMatch();
-    }, 1200);
+function renderStatsTable() {
+    const tbody = document.getElementById("stats-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    Object.values(gameState.playerStats).forEach(st => {
+        tbody.innerHTML += `<tr><td>${st.name}</td><td>${st.pos}</td><td>${st.rating}</td><td>${st.goals}</td><td>${st.matches}</td></tr>`;
+    });
 }
 
 function switchTab(tabId, el) {
@@ -1427,7 +861,6 @@ function switchTab(tabId, el) {
     document.getElementById(`tab-${tabId}`).classList.add("active");
     if (el) el.classList.add("active");
     if (tabId === 'market') renderMarketUI();
-    if (tabId === 'quests') renderQuestsUI();
 }
 
 function updateUI() {
@@ -1437,16 +870,8 @@ function updateUI() {
     document.getElementById("ui-ovr").innerText = calculateTeamOVR();
     document.getElementById("ui-team-name").innerText = gameState.teamName;
     document.getElementById("ui-manager-name").innerText = gameState.managerName;
-    document.getElementById("fac-lvl").innerText = gameState.facilityLevel;
-    document.getElementById("fac-cost").innerText = `$${gameState.facilityLevel * 100}`;
-    document.getElementById("stad-lvl").innerText = gameState.stadiumLevel;
-    document.getElementById("stad-cost").innerText = `$${gameState.stadiumLevel * 150}`;
     document.getElementById("fin-coins").innerText = `$${gameState.coins}`;
-    document.getElementById("fin-matches").innerText = gameState.totalMatches;
     document.getElementById("btc-shop-bal").innerText = `${gameState.btc.toFixed(2)} BTC`;
-    
-    document.getElementById("input-manager").value = gameState.managerName;
-    document.getElementById("input-team").value = gameState.teamName;
 }
 
 function openProfileModal() { document.getElementById("profile-modal").style.display = "flex"; }
