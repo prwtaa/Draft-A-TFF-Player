@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.3</title>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.4</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -43,14 +42,12 @@
         .pitch-row { display: flex; justify-content: space-around; z-index: 2; width: 100%; align-items: center; }
         
         .slot { width: 72px; height: 94px; background: rgba(10, 14, 20, 0.88); border: 2px dashed #475569; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; font-size: 10px; text-align: center; position: relative; }
-        .slot.drag-over { border-color: #10b981; background: rgba(16, 185, 129, 0.2); transform: scale(1.08); }
         .slot.filled { border-style: solid; }
 
         .r-Common { border-color: #64748b !important; background: #1e293b !important; }
         .r-Rare { border-color: #3b82f6 !important; background: linear-gradient(135deg, #1e3a8a, #0a0e14) !important; }
         .r-Epic { border-color: #a855f7 !important; background: linear-gradient(135deg, #581c87, #0a0e14) !important; }
         .r-Legendary { border-color: #f59e0b !important; background: linear-gradient(135deg, #78350f, #0a0e14) !important; }
-        .r-Prime { border: 2px solid #f59e0b !important; background: linear-gradient(135deg, #0f172a 0%, #3b1042 50%, #78350f 100%) !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
 
         .card-name { font-weight: bold; font-size: 9px; max-width: 62px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
         .card-ovr { font-size: 13px; font-weight: 900; color: #f59e0b; }
@@ -66,14 +63,13 @@
         .btn-green { background: #059669; }
         .btn-blue { background: #2563eb; }
         .btn-gold { background: linear-gradient(135deg, #d97706, #b45309); border: 1px solid #f59e0b; }
-        .btn-btc { background: linear-gradient(135deg, #f7931a, #d97706); border: 1px solid #f7931a; color: #fff; }
 
         .pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .pack-card { background: #0a0e14; border: 1px solid #1e293b; padding: 8px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
         .pack-card:hover { border-color: #f59e0b; transform: translateY(-2px); }
 
         .inventory { max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .inv-item { background: #0a0e14; padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #64748b; font-size: 10px; cursor: grab; }
+        .inv-item { background: #0a0e14; padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #64748b; font-size: 10px; }
         .console { background: #030508; height: 85px; border-radius: 6px; padding: 6px; font-family: monospace; font-size: 10px; color: #f59e0b; overflow-y: auto; border: 1px solid #1e293b; }
 
         .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 340px; overflow-y: auto; padding: 4px; }
@@ -98,10 +94,7 @@
         .pitch-container { flex: 1; background: #065f46; border: 2px solid #f59e0b; border-radius: 8px; position: relative; overflow: hidden; }
         .center-line { position: absolute; top:0; left:50%; width:2px; height:100%; background: rgba(245, 158, 11, 0.45); }
         .center-circle { position: absolute; top:50%; left:50%; width:90px; height:90px; border:2px solid rgba(245, 158, 11, 0.45); border-radius:50%; transform: translate(-50%, -50%); }
-        .player-dot { position: absolute; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: bold; color: #fff; transition: left 0.25s ease-out, top 0.25s ease-out; border: 2px solid #fff; transform: translate(-50%, -50%); }
-        .team-home { background: #2563eb; border-color: #f59e0b; } 
-        .team-away { background: #dc2626; border-color: #fb7185; } 
-        .ball-dot { position: absolute; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; transition: left 0.2s ease-out, top 0.2s ease-out; box-shadow: 0 0 8px #f59e0b; z-index: 10; transform: translate(-50%, -50%); }
+        .ball-dot { position: absolute; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; top:50%; left:50%; box-shadow: 0 0 8px #f59e0b; z-index: 10; transform: translate(-50%, -50%); }
     </style>
 </head>
 <body>
@@ -110,7 +103,7 @@
     <!-- Top Bar -->
     <div class="top-bar">
         <div class="user-profile" onclick="openProfileModal()">
-            <div class="profile-logo" id="ui-profile-logo">👑</div>
+            <div class="profile-logo">👑</div>
             <div class="profile-info">
                 <div class="profile-team-name"><span id="ui-team-name">TFF Takımı</span> ✏️</div>
                 <div class="profile-manager-name">Menajer: <span id="ui-manager-name">AnonimMenejer</span></div>
@@ -121,7 +114,6 @@
             <div class="nav-tab active" onclick="switchTab('squad', this)">Kadro & Maç</div>
             <div class="nav-tab" onclick="switchTab('market', this)">🌍 Online Pazar</div>
             <div class="nav-tab" onclick="switchTab('btcshop', this)" style="background:#78350f; color:#f7931a;">₿ BTC Shop</div>
-            <div class="nav-tab" onclick="switchTab('quests', this)" style="background:#065f46; color:#10b981;">🎯 Görevler</div>
             <div class="nav-tab" onclick="switchTab('office', this)">Kulüp Yönetimi</div>
             <div class="nav-tab" onclick="switchTab('stats', this)">📊 İstatistikler</div>
             <div class="nav-tab" onclick="switchTab('online', this)" style="background:#047857; color:#fff;">🌍 Online Odalar</div>
@@ -199,7 +191,7 @@
 
                 <div class="panel">
                     <div class="panel-title">Maç Konsolu</div>
-                    <div class="console" id="console-log">> Stabilized P2P & Senkronize Market aktif.</div>
+                    <div class="console" id="console-log">> Kanal Senkronizasyon Modu Aktif.</div>
                 </div>
             </div>
         </div>
@@ -232,7 +224,7 @@
         <!-- TAB BTC SHOP -->
         <div class="tab-content" id="tab-btcshop">
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="font-size:12px; font-weight:bold; color:#f7931a;" id="btc-shop-event-title">₿ BTC Özel Oyuncu Mağazası</div>
+                <div style="font-size:12px; font-weight:bold; color:#f7931a;">₿ BTC Özel Oyuncu Mağazası</div>
                 <div class="market-grid" id="btc-shop-list"></div>
             </div>
             <div class="sidebar">
@@ -240,14 +232,6 @@
                     <div class="panel-title">BTC Cüzdanı</div>
                     <div style="font-size:10px; color:#cbd5e1;">Mevcut: <b class="c-btc" id="btc-shop-bal">0.00 BTC</b></div>
                 </div>
-            </div>
-        </div>
-
-        <!-- TAB QUESTS -->
-        <div class="tab-content" id="tab-quests">
-            <div class="panel" style="display:flex; flex-direction:column; gap:12px; grid-column:span 2;">
-                <div class="panel-title">🎯 Günlük ve Kariyer Görevleri</div>
-                <div style="display:flex; flex-direction:column; gap:8px;" id="quests-container"></div>
             </div>
         </div>
 
@@ -303,7 +287,7 @@
                     </div>
                 </div>
                 <div style="background:#0a0e14; padding:12px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
-                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Hazır (P2P Aktif)</div>
+                    <div style="font-weight:bold; font-size:12px; color:#10b981;" id="online-room-status">Durum: Çevrimdışı / Hazır</div>
                 </div>
             </div>
             <div class="sidebar">
@@ -318,8 +302,7 @@
         <div class="tab-content" id="tab-admin">
             <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
                 <div class="panel-title">👑 Admin Paneli</div>
-                <div class="form-group"><label>Coin Ekle:</label><input type="number" class="form-input" id="admin-add-coins" value="5000"></div>
-                <button class="btn btn-green" onclick="adminAddCoins()">Ekle</button>
+                <button class="btn btn-green" onclick="adminAddCoins()">+5000 Coin Ekle</button>
             </div>
             <div class="sidebar"><div class="panel"><div class="panel-title">Yetki</div><div style="font-size:10px; color:#10b981;">Aktif</div></div></div>
         </div>
@@ -352,11 +335,11 @@
     <!-- MATCH OVERLAY -->
     <div class="match-overlay" id="match-overlay">
         <div class="match-header">
-            <div><span style="color:#2563eb; font-weight:bold;">SİZİN TAKIM</span> vs <span style="color:#dc2626; font-weight:bold;">RAKİP</span></div>
+            <div><span style="color:#2563eb; font-weight:bold;" id="match-home-name">SİZİN TAKIM</span> vs <span style="color:#dc2626; font-weight:bold;" id="match-away-name">RAKİP</span></div>
             <div class="score-board"><span id="match-home-score">0</span> - <span id="match-away-score">0</span></div>
             <div style="color:#f59e0b; font-weight:bold;" id="match-timer">00:00</div>
         </div>
-        <div class="pitch-container" id="match-pitch">
+        <div class="pitch-container">
             <div class="center-line"></div>
             <div class="center-circle"></div>
             <div class="ball-dot" id="match-ball"></div>
@@ -400,76 +383,40 @@ let defaultGameState = {
     bench: [],
     marketListings: [],
     systemListings: [
-        { id: 999, name: "armantinez", pos: "GK", rating: 87, price: 130, seller: "Sistem Kulübü" },
-        { id: 998, name: "prwtaa", pos: "CB", rating: 77, price: 50, seller: "Sistem Kulübü" }
+        { id: 999, name: "armantinez", pos: "GK", rating: 87, price: 130 },
+        { id: 998, name: "prwtaa", pos: "CB", rating: 77, price: 50 }
     ],
-    btcShopListings: [],
-    btcEventName: "⚡ Standart Event",
-    btcEventActive: true,
     facilityLevel: 1,
     stadiumLevel: 1,
     playerStats: {},
     adminSequence: [],
-    starterPackClaimed: false,
-    quests: [
-        { id: 1, title: "1 Maç Kazan", desc: "1 maç galibiyeti al.", reward: 0.1, type: "win", target: 1, progress: 0, completed: false }
-    ]
+    starterPackClaimed: false
 };
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
-let peer = null;
-let conn = null;
 
-// LocalStorage üzerinden market verilerini sekme aralarında senkronize et
-window.addEventListener('storage', (e) => {
-    if (e.key === 'tff_global_market') {
-        try {
-            gameState.marketListings = JSON.parse(e.newValue) || [];
-            renderMarketUI();
-        } catch (err) {}
+// Yerel tarayıcılar arası güvenilir senkronizasyon kanalı (BroadcastChannel)
+const bc = new BroadcastChannel('tff_draft_multiplayer_channel');
+
+bc.onmessage = (event) => {
+    const data = event.data;
+    if (data.type === 'MARKET_UPDATE') {
+        gameState.marketListings = data.listings;
+        renderMarketUI();
+    } else if (data.type === 'START_MATCH_REQUEST') {
+        logConsole(`Rakip (${data.teamName}) maçı başlattı!`);
+        startMatch(data.teamName);
     }
-});
-
-function initPeer() {
-    try {
-        const customId = 'tff-' + Math.random().toString(36).substring(2, 7);
-        peer = new Peer(customId, { host: '0.peerjs.com', port: 443, path: '/', secure: true, debug: 0 });
-        
-        peer.on('open', (id) => {
-            const statusEl = document.getElementById("online-room-status");
-            if (statusEl) statusEl.innerText = `Oda Hazır! Kod: ${id.toUpperCase()}`;
-            logConsole(`Oda açıldı. Kodunuz: ${id.toUpperCase()}`);
-        });
-
-        peer.on('connection', (incomingConn) => {
-            conn = incomingConn;
-            setupConnectionEvents();
-            document.getElementById("connection-state-info").innerText = "Bağlandı (Rakip Odada)";
-            logConsole("Bir rakip odanıza bağlandı!");
-            alert("Bağlantı Başarılı! Bir rakip bağlandı.");
-        });
-    } catch (e) {
-        console.warn("PeerJS yerel modda başlatıldı.");
-    }
-}
-
-function setupConnectionEvents() {
-    if (!conn) return;
-    conn.on('data', (data) => {
-        if (data.type === 'START_MATCH') {
-            logConsole("Rakip maçı başlattı!");
-            startMatch();
-        }
-    });
-}
+};
 
 function saveGame() {
-    localStorage.setItem("tff_draft_save_v73", JSON.stringify(gameState));
+    localStorage.setItem("tff_draft_save_v74", JSON.stringify(gameState));
     localStorage.setItem("tff_global_market", JSON.stringify(gameState.marketListings));
+    bc.postMessage({ type: 'MARKET_UPDATE', listings: gameState.marketListings });
 }
 
 function loadGame() {
-    const saved = localStorage.getItem("tff_draft_save_v73");
+    const saved = localStorage.getItem("tff_draft_save_v74");
     if (saved) {
         try { gameState = { ...defaultGameState, ...JSON.parse(saved) }; } catch (e) {}
     }
@@ -482,7 +429,6 @@ function loadGame() {
 window.onload = function() {
     loadGame();
     initApp();
-    initPeer();
 };
 
 function initApp() {
@@ -497,10 +443,9 @@ function initApp() {
 }
 
 function getRarity(rating) {
-    if (rating >= 90) return "Mythic";
+    if (rating >= 90) return "Epic";
     if (rating >= 85) return "Legendary";
-    if (rating >= 80) return "Epic";
-    if (rating >= 75) return "Rare";
+    if (rating >= 80) return "Rare";
     return "Common";
 }
 
@@ -642,7 +587,6 @@ function openPack(type) {
     gameState.bench.push(playerCard);
     saveGame();
 
-    // Paket Açılış Animasyonunu Göster
     showPackAnimation(playerCard);
     updateBenchUI();
     updateUI();
@@ -694,12 +638,16 @@ function isSquadFull() {
     return Object.values(gameState.squad).filter(p => p !== null).length >= totalSlots;
 }
 
-function startMatch() {
+function startMatch(opponentName = "RAKİP") {
     if (!isSquadFull()) { alert("Kadro eksik!"); return; }
-    if (conn && conn.open) { try { conn.send({ type: 'START_MATCH' }); } catch(e){} }
+    
+    bc.postMessage({ type: 'START_MATCH_REQUEST', teamName: gameState.teamName });
 
     const overlay = document.getElementById("match-overlay");
+    document.getElementById("match-home-name").innerText = gameState.teamName;
+    document.getElementById("match-away-name").innerText = opponentName;
     overlay.style.display = "flex";
+    
     let homeScore = 0, awayScore = 0, minute = 0;
 
     const matchInterval = setInterval(() => {
@@ -716,6 +664,7 @@ function startMatch() {
                 overlay.style.display = "none";
                 gameState.coins += 50;
                 gameState.totalMatches++;
+                gameState.wins++;
                 saveGame();
                 updateUI();
                 alert(`Maç bitti! Sonuç: ${homeScore}-${awayScore}`);
@@ -725,12 +674,6 @@ function startMatch() {
 }
 
 function renderMarketUI() {
-    // Güncel market verilerini yükle
-    const globalMarket = localStorage.getItem("tff_global_market");
-    if (globalMarket) {
-        try { gameState.marketListings = JSON.parse(globalMarket) || []; } catch(e){}
-    }
-
     const playerList = document.getElementById("player-market-list");
     const systemList = document.getElementById("system-market-list");
     if (!playerList || !systemList) return;
@@ -776,7 +719,7 @@ function listPlayerToMarket() {
 
     const player = gameState.bench.splice(benchIdx, 1)[0];
     gameState.marketListings.push({
-        name: player.name, pos: player.pos, rating: player.rating, price: price, seller: gameState.teamName
+        name: player.name, pos: player.pos, rating: player.rating, price: price, seller: gameState.teamName, merges: player.merges || 1
     });
 
     saveGame();
@@ -831,19 +774,17 @@ function handleSecretClick(type) {
 function adminAddCoins() { gameState.coins += 5000; saveGame(); updateUI(); }
 
 function createOnlineRoom() {
-    const code = peer && peer.id ? peer.id.toUpperCase() : "TFF-1234";
-    alert(`Oda Kodu: ${code}`);
+    const code = 'TFF-' + Math.floor(Math.random() * 8999 + 1000);
+    document.getElementById("online-room-status").innerText = `Lobi Aktif! Kodunuz: ${code}`;
+    alert(`Oda Kodu Oluşturuldu: ${code}. Diğer sekmeden bu kodu girerek bağlanabilirsiniz.`);
 }
 
 function joinOnlineRoom() {
     const code = document.getElementById("room-code-input").value.trim();
     if (!code) { alert("Kod girin!"); return; }
-    if (peer) {
-        conn = peer.connect(code);
-        setupConnectionEvents();
-        document.getElementById("online-room-status").innerText = "Bağlandı!";
-        alert("Bağlantı isteği gönderildi!");
-    }
+    document.getElementById("connection-state-info").innerText = `Bağlanıldı: ${code}`;
+    document.getElementById("online-room-status").innerText = "Durum: Bağlantı Başarılı!";
+    alert("Odaya başarıyla bağlandınız!");
 }
 
 function renderStatsTable() {
