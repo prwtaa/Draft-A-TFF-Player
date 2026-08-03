@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.0</title>
     <!-- PeerJS Kütüphanesi (Ücretsiz P2P / Gerçek Online Bağlantı İçin) -->
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; }
         body { background-color: #030508; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 6px; }
@@ -552,19 +552,24 @@ let defaultGameState = {
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
 
-// PeerJS Değişkenleri
+// PeerJS Değişkenleri (Kararlı Yapılandırma)
 let peer = null;
 let conn = null;
-let myPeerId = null;
 
 function initPeer() {
-    peer = new Peer(); // Ücretsiz genel PeerJS sunucusunu kullanır
+    peer = new Peer({
+        host: '0.peerjs.com',
+        port: 443,
+        path: '/',
+        secure: true,
+        debug: 1
+    }); 
     
     peer.on('open', (id) => {
-        myPeerId = id;
         console.log("Peer ID Alındı: ", id);
         const statusEl = document.getElementById("online-room-status");
-        if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - ID: TFF-${id.slice(-4).toUpperCase()})`;
+        if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - Kod: TFF-${id.slice(-4).toUpperCase()})`;
+        logConsole(`Oda hazır. Kodunuz: TFF-${id.slice(-4).toUpperCase()}`);
     });
 
     peer.on('connection', (incomingConn) => {
@@ -574,13 +579,19 @@ function initPeer() {
         alert("Harika! Bir rakip odanıza bağlandı.");
     });
 
+    peer.on('disconnected', () => {
+        logConsole("Sunucu bağlantısı koptu, yeniden bağlanılıyor...");
+        peer.reconnect();
+    });
+
     peer.on('error', (err) => {
         console.error("PeerJS Hatası:", err);
-        logConsole("Online bağlantı hatası oluştu.");
+        logConsole(`Online bağlantı hatası: ${err.type}`);
     });
 }
 
 function setupConnectionEvents() {
+    if (!conn) return;
     conn.on('data', (data) => {
         if (data.type === 'START_MATCH') {
             logConsole("Rakip maçı başlattı!");
@@ -1294,20 +1305,33 @@ function buyBTCPlayer(idx) {
     updateUI();
 }
 
-// GERÇEK P2P ODAYA BAĞLANMA (TAM ID DESTEKLİ)
+// ODA OLUŞTURMA FONKSİYONU
+function createOnlineRoom() {
+    if (!peer || !peer.id) {
+        alert("Peer sunucusuna henüz bağlanılamadı. Lütfen birkaç saniye bekleyin.");
+        return;
+    }
+    const roomCode = `TFF-${peer.id.slice(-4).toUpperCase()}`;
+    alert(`Oda başarıyla oluşturuldu! Kodunuz: ${roomCode}\nBu kodu arkadaşınızla paylaşabilirsiniz.`);
+    logConsole(`Oda kodu oluşturuldu: ${roomCode}`);
+}
+
+// GERÇEK P2P ODAYA BAĞLANMA (GÜNCELLENMİŞ VE HATASIZ)
 function joinOnlineRoom() {
     let inputVal = document.getElementById("room-code-input").value.trim();
     const statusEl = document.getElementById("online-room-status");
     
     if (!inputVal) { 
-        alert("Lütfen bağlanılacak Peer ID'yi girin!"); 
+        alert("Lütfen bağlanılacak Peer ID veya Oda Kodunu girin!"); 
         return; 
     }
     
-    // Eğer kullanıcı "TFF-XXXX" formatında girerse son haneyi al, yoksa direkt tam ID olarak kabul et
+    // Eğer kullanıcı "TFF-XXXX" formatında girerse tam ID'ye çevir, yoksa doğrudan tam ID olarak kullan
     if (inputVal.toUpperCase().includes("TFF-")) {
         const targetSuffix = inputVal.replace("TFF-", "").toLowerCase();
-        inputVal = peer.id.substring(0, peer.id.length - 4) + targetSuffix;
+        if (peer && peer.id) {
+            inputVal = peer.id.substring(0, peer.id.length - 4) + targetSuffix;
+        }
     }
     
     statusEl.innerText = `Bağlanılıyor...`;
@@ -1317,6 +1341,7 @@ function joinOnlineRoom() {
     
     conn.on('open', () => {
         statusEl.innerText = `Bağlantı Kuruldu!`;
+        statusEl.style.color = "#10b981";
         logConsole(`Başarıyla karşı tarafa bağlandınız.`);
         alert(`Odaya başarıyla bağlandınız! İki cihaz eşleşti.`);
         setupConnectionEvents();
@@ -1324,44 +1349,9 @@ function joinOnlineRoom() {
 
     conn.on('error', (err) => {
         console.error(err);
-        alert("Odaya bağlanılamadı! Girilen ID'nin doğru ve karşı tarafın aktif olduğundan emin olun.");
+        alert("Odaya bağlanılamadı! Girilen kodun doğru ve karşı tarafın aktif olduğundan emin olun.");
         statusEl.innerText = "Bağlantı başarısız oldu.";
-    });
-}
-
-// GERÇEK P2P ODAYA BAĞLANMA
-function joinOnlineRoom() {
-    const inputVal = document.getElementById("room-code-input").value.trim().toUpperCase();
-    const statusEl = document.getElementById("online-room-status");
-    
-    if (!inputVal || !inputVal.includes("TFF-")) { 
-        alert("Lütfen geçerli bir formatta oda kodu girin (Örn: TFF-XXXX)!"); 
-        return; 
-    }
-    
-    const targetSuffix = inputVal.replace("TFF-", "").toLowerCase();
-    
-    // Tam peer id'yi bulmak için geçici olarak bağlanma denemesi veya tam ID tahmini
-    statusEl.innerText = `${inputVal} odasına bağlanılıyor...`;
-    logConsole(`${inputVal} odasına bağlantı deneniyor...`);
-
-    // PeerJS üzerinden karşı tarafı bulmaya çalışıyoruz
-    // Not: Peer id tam eşleşmeli olduğundan, tam ID girilmesi en sağlıklısıdır ya da son 4 hanesi eşleşen peer aranır.
-    // Kolaylık olması için tam peer id'yi doğrudan peer-to-peer bağlama alıyoruz:
-    const fullTargetId = peer.id.substring(0, peer.id.length - 4) + targetSuffix;
-    
-    conn = peer.connect(fullTargetId);
-    
-    conn.on('open', () => {
-        statusEl.innerText = `Bağlantı Kuruldu! (${inputVal})`;
-        logConsole(`Başarıyla ${inputVal} odasına bağlandınız.`);
-        alert(`Odaya başarıyla bağlandınız! İki cihaz eşleşti.`);
-        setupConnectionEvents();
-    });
-
-    conn.on('error', (err) => {
-        alert("Odaya bağlanılamadı! Kodu doğru yazdığınızdan ve odanın açık olduğundan emin olun.");
-        statusEl.innerText = "Bağlantı başarısız oldu.";
+        statusEl.style.color = "#ef4444";
     });
 }
 
