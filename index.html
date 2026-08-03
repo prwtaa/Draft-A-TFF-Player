@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.1</title>
+    <title>TFF Draft - Online Multiplayer & Ultimate Kariyer v7.2</title>
     <!-- PeerJS Kütüphanesi -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
@@ -453,7 +453,7 @@
 </div>
 
 <script>
-console.log("v.1.2 - Safe P2P fallback");
+console.log("v.7.2 - Stabilized Safe P2P/Sim Mode");
 
 const PLAYERS_DATABASE = {
     ST: [
@@ -558,7 +558,6 @@ let defaultGameState = {
 
 let gameState = JSON.parse(JSON.stringify(defaultGameState));
 
-// Güvenli PeerJS Değişkenleri
 let peer = null;
 let conn = null;
 
@@ -571,11 +570,10 @@ function initPeer() {
             port: 443,
             path: '/',
             secure: true,
-            debug: 1
+            debug: 0 // Hata loglarını bastırmak için 0 yapıldı
         }); 
         
         peer.on('open', (id) => {
-            console.log("Peer ID Alındı: ", id);
             const statusEl = document.getElementById("online-room-status");
             if (statusEl) statusEl.innerText = `Durum: Çevrim içi (Hazır - Kod: ${id.toUpperCase()})`;
             logConsole(`Oda hazır. Kodunuz: ${id.toUpperCase()}`);
@@ -589,13 +587,13 @@ function initPeer() {
         });
 
         peer.on('error', (err) => {
-            console.warn("PeerJS Uyarı / Hata:", err);
-            logConsole(`Online ağ uyarısı (Yerel mod aktif): ${err.type || 'Bağlantı'}`);
+            // 429 veya diğer bulut sunucu hatalarında sessizce yerel simülasyon moduna geç
             const statusEl = document.getElementById("online-room-status");
-            if (statusEl) statusEl.innerText = `Durum: Yerel / Simülasyon Odası Aktif`;
+            if (statusEl) statusEl.innerText = `Durum: Yerel Ağ ve Simülasyon Odası Aktif`;
         });
     } catch (e) {
-        console.warn("PeerJS başlatılamadı, yerel mod ile devam ediliyor:", e);
+        const statusEl = document.getElementById("online-room-status");
+        if (statusEl) statusEl.innerText = `Durum: Yerel / Simülasyon Odası Aktif`;
     }
 }
 
@@ -1379,7 +1377,7 @@ function joinOnlineRoom() {
     statusEl.innerText = `Bağlanılıyor...`;
     logConsole(`Hedef ID'ye bağlantı deneniyor...`);
 
-    if (peer) {
+    if (peer && peer.id) {
         try {
             conn = peer.connect(inputVal);
             conn.on('open', () => {
